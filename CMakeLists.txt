@@ -1,11 +1,25 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
 PROJECT("Cunnyware")
 
-SET(CMAKE_CXX_FLAGS "-std=c++2a -ldl -lpthread -Wall -fpic -O2")
+SET(CMAKE_CXX_FLAGS "-std=c++2a -ldl -lpthread -fopenmp -Wall -fpic -O2 --no-gnu-unique")
 SET(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-FILE(GLOB SOURCES "src/*.cpp")
+FILE(GLOB SOURCES
+	"src/*.cpp"
+	"src/Hooks/*.cpp"
+	"src/Util/*.cpp"
+	"src/UI/*.cpp"
+	"src/ImGUI/*.cpp"
+	"src/incbin/*.c")
+list(APPEND SOURCES "src/ImGUI/examples/imgui_impl_opengles3.cpp")
+list(APPEND SOURCES "src/ImGUI/examples/libs/gl3w/GL/gl3w.c")
+list(APPEND SOURCES "src/incbin/incbin.c")
+
+INCLUDE_DIRECTORIES("src/ImGUI/")
+INCLUDE_DIRECTORIES("src/ImGUI/examples/")
+INCLUDE_DIRECTORIES("src/ImGUI/examples/libs/")
+INCLUDE_DIRECTORIES("src/ImGUI/examples/libs/gl3w/")
 
 ADD_SUBDIRECTORY(libs/fmt)
 ADD_LIBRARY(${CMAKE_PROJECT_NAME} SHARED ${SOURCES})
-TARGET_LINK_LIBRARIES(${CMAKE_PROJECT_NAME} fmt)
+TARGET_LINK_LIBRARIES(${CMAKE_PROJECT_NAME} fmt dl SDL2 GL)
