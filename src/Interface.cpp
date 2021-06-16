@@ -116,6 +116,7 @@ ICvar* cvar = nullptr;
 IEngineClient* engine = nullptr;
 IInputSystem* inputSystem = nullptr;
 IInputInternal* inputInternal = nullptr;
+ILauncherMgr* launcherMgr = nullptr;
 
 void Interface::FindInterfaces()
 {
@@ -123,9 +124,24 @@ void Interface::FindInterfaces()
 	engine = GetInterface<IEngineClient>("./bin/linux64/engine_client.so", "VEngineClient");
 	inputSystem = GetInterface<IInputSystem>("./bin/linux64/inputsystem_client.so", "InputSystemVersion");
 	inputInternal = GetInterface<IInputInternal>("./bin/linux64/vgui2_client.so", "VGUI_InputInternal");
+
+	// launcherMgr
+	{
+		const auto addr = FindPatternInModule(
+			"launcher_client.so"s,
+			u8"\x0F\x95\x83"
+			u8"\x00\x00\x00\x00"
+			u8"\xE8"
+			u8"\x00\x00\x00\x00"
+			u8"\xE8",
+			"xxx????x????x");
+		const auto createFn = reinterpret_cast<ILauncherMgr* (*)(void)>(GetAbsoluteAddress(addr + 12, 1, 5));
+		launcherMgr = createFn();
+	}
 }
 
 VMT* inputInternalVMT = nullptr;
+VMT* launcherMgrVMT = nullptr;
 
 void Interface::HookVMTs()
 {
@@ -133,4 +149,8 @@ void Interface::HookVMTs()
 	inputInternalVMT->HookVM(Hooks::SetKeyCodeState, 92);
 	inputInternalVMT->HookVM(Hooks::SetMouseCodeState, 93);
 	inputInternalVMT->ApplyVMT();
+
+    launcherMgrVMT = new VMT(launcherMgr);
+    launcherMgrVMT->HookVM(Hooks::PumpWindowsMessageLoop, 19);
+    launcherMgrVMT->ApplyVMT();
 }

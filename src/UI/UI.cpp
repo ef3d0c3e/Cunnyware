@@ -14,6 +14,7 @@ void UI::Draw()
 	if (isVisible)
 	{
 		ImGui::Begin("Test window drawx");
+		ImGui::Text("In Game: %d", cvar->FindVar("cl_mouseenable")->GetInt());
 		static char buf[32];
 		ImGui::InputText("abc", buf, 32);
 		ImGui::End();

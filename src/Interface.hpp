@@ -12,9 +12,11 @@ extern ICvar* cvar;
 extern IEngineClient* engine;
 extern IInputSystem* inputSystem;
 extern IInputInternal* inputInternal;
+extern ILauncherMgr* launcherMgr;
 
 #include "Util/VMT.hpp"
 extern VMT* inputInternalVMT;
+extern VMT* launcherMgrVMT;
 
 namespace Interface
 {

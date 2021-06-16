@@ -10,6 +10,7 @@ typedef void (*ChangeCallbackFn)(Cvar* cvar, const char* oldValue, f32 flOldValu
 
 class ConCommandBase
 {
+public:
 	virtual ~ConCommandBase() = 0;
 
 	virtual bool IsCommand() const = 0;

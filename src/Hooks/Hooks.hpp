@@ -10,6 +10,8 @@ namespace Hooks
 {
 	void SetKeyCodeState(void* thisptr, ButtonCode code, bool pressed);
 	void SetMouseCodeState(void* thisptr, ButtonCode code, MouseCodeState state);
+
+	i32 PumpWindowsMessageLoop(void* thisptr, void* ecx);
 }
 
 namespace Paint

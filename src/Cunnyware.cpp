@@ -29,8 +29,8 @@ int __attribute__((constructor)) Startup()
 		Interface::FindInterfaces();
 
 		SDL2::Hook();
+		Interface::HookVMTs();
 
-		ColorRGBA c(255,0,0);
 		cvar->ConsoleColorPrintf(ColorRGBA(0, 255, 0), "Cunnyware has been successfully loaded!\n");
 	}
 	catch (Exception& e)
@@ -47,6 +47,7 @@ int __attribute__((constructor)) Startup()
 
 void __attribute__((destructor)) Shutdown()
 {
+	cvar->FindVar("cl_mouseenable")->SetValue(1);
 	VMT::ReleaseAllVMTs();
 
 	if (!failed)

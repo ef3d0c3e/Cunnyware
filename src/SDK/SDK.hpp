@@ -5,5 +5,6 @@
 #include "IEngineClient.hpp"
 #include "IInputSystem.hpp"
 #include "IInputInternal.hpp"
+#include "ILauncherMgr.hpp"
 
 #endif // SDK_HPP

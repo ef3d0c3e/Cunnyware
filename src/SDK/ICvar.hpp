@@ -1,6 +1,7 @@
 #ifndef SDK_ICVAR_HPP
 #define SDK_ICVAR_HPP
 
+#include "CUtl/Vector.hpp"
 #include "IAppSystem.hpp"
 #include "ConCommand.hpp"
 
@@ -41,6 +42,16 @@ public:
 	virtual void SetValue(f32 value) = 0;
 	virtual void SetValue(i32 value) = 0;
 	virtual void SetValue(Color value) = 0;
+
+	void SetV(i32 value)
+	{
+		return getvfunc<void (*)(void*, i32)>(this, 19)(this, value);
+	}
+
+	i32 GetI()
+	{
+		return getvfunc<i32 (*)(void*)>(this, 16)(this);
+	}
 
 	// Value
 	struct CVValue
@@ -96,7 +107,7 @@ protected:
 	f32 maxVal;
 
 	// Call this function when ConVar changes
-	//CUtlVector<ChangeCallbackFn> changeCallbacks;
+	CUtlVector<ChangeCallbackFn> changeCallbacks;
 };
 
 class IConsoleDisplayFunc

@@ -167,6 +167,9 @@ constexpr std::array<T, sizeof...(Ts)+1> make_array(T t, Ts... ts)
 	return a;
 }
 
+std::uintptr_t FindPattern(std::uintptr_t address, std::size_t size, const std::u8string_view& pattern, const std::string_view& mask);
+std::uintptr_t FindPatternInModule(const std::string& moduleNamme, const std::u8string_view& pattern, const std::string_view& mask);
+
 Elf64_Word GetProtectionFlags(std::uintptr_t address);
 
 extern long pageSize;
