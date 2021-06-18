@@ -8,16 +8,28 @@
 
 namespace Hooks
 {
+	// InputInternal
 	void SetKeyCodeState(void* thisptr, ButtonCode code, bool pressed);
 	void SetMouseCodeState(void* thisptr, ButtonCode code, MouseCodeState state);
 
+	// LauncherMgr
 	i32 PumpWindowsMessageLoop(void* thisptr, void* ecx);
+
+	// Client
+	void FrameStageNotify(void* thisptr, ClientFrameStage curStage);
+	void LevelInitPostEntity(void* thisptr);
+
+	// ClientMode
+	void OverrideView(void* thisptr, CViewSetup* setup);
+	bool CreateMove(void* thisptr, f32 inputSampleTime, CUserCmd* cmd);
+	bool ShouldDrawCrosshair(void* thisptr);
+	f32 GetViewModelFov(void* thisptr);
 }
 
-namespace Paint
+namespace SDL2
 {
-	extern int windowWidth;
-	extern int windowHeight;
+	void Hook();
+	void UnHook();
 }
 
 namespace SetKeyCodeState
@@ -26,10 +38,20 @@ namespace SetKeyCodeState
 	extern ButtonCode* keyOutput;
 }
 
-namespace SDL2
+namespace OverrideView
 {
-	void Hook();
-	void UnHook();
+	extern f32 currentFov;
+}
+
+namespace CreateMove
+{
+	extern bool sendPacket;
+}
+
+namespace Paint
+{
+	extern int windowWidth;
+	extern int windowHeight;
 }
 
 #endif // HOOKS_HOOK_HPP

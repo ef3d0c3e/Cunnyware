@@ -16,10 +16,10 @@ static bool failed = false;
 
 Redir stdoutRedir, stderrRedir;
 
-int __attribute__((constructor)) Startup()
+void Start()
 {
 	stdoutRedir.Create(stdout, "/mnt/ram_disk/cunnyware.out");
-	stderrRedir.Create(stdout, "/mnt/ram_disk/cunnyware.err");
+	stderrRedir.Create(stderr, "/mnt/ram_disk/cunnyware.err");
 
 	try
 	{
@@ -41,6 +41,11 @@ int __attribute__((constructor)) Startup()
 
 		failed = true;
 	}
+}
+
+int __attribute__((constructor)) Startup()
+{
+	std::thread(Start).detach();
 
 	return 0;
 }
@@ -48,15 +53,22 @@ int __attribute__((constructor)) Startup()
 void __attribute__((destructor)) Shutdown()
 {
 	cvar->FindVar("cl_mouseenable")->SetValue(1);
-	VMT::ReleaseAllVMTs();
 
-	if (!failed)
+	try
 	{
-		SDL2::UnHook();
+		if (!failed)
+		{
+			SDL2::UnHook();
+			VMT::ReleaseAllVMTs();
+		}
+	}
+	catch (Exception& e)
+	{
+		std::cout << "\033[31m***EXCEPTION CAUGHT***\n";
+		std::cout << e.what();
+		std::cout << "\n***END OF EXCEPTION***\033[0m" << std::endl;
 	}
 
-	VMT::ReleaseAllVMTs();
-	
 	fmt::print("Cunnyware unloaded.\n");
 
 	stdoutRedir.Release();

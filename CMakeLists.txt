@@ -1,7 +1,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
 PROJECT("Cunnyware")
 
-SET(CMAKE_CXX_FLAGS "-std=c++2a -ldl -lpthread -fopenmp -Wall -fpic -O2 --no-gnu-unique")
+SET(CMAKE_CXX_FLAGS "-std=c++2a -ldl -lpthread -fopenmp -Wall -fpic -O2 --no-gnu-unique -ftree-vectorize -s -fvisibility=hidden -fvisibility-inlines-hidden")
 SET(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 FILE(GLOB SOURCES

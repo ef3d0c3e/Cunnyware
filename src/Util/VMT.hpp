@@ -28,7 +28,7 @@ class VMT
 	bool m_hasRTTI = false;
 	i32 m_rttiPrefix = 0;
 
-	static inline std::vector<VMT*> m_vmts;
+	static inline std::vector<VMT*> s_vmts;
 public:
 
 	~VMT()
@@ -63,7 +63,7 @@ public:
 		// Make sure to "NULL terminate" our new array of pointers.
 		std::memset(&m_vmt[m_methodCount], 0x0, sizeof(std::uintptr_t));
 
-		m_vmts.push_back(this);
+		s_vmts.push_back(this);
 	}
 
 	// Hook virtual method
@@ -102,9 +102,9 @@ public:
 
 	static void ReleaseAllVMTs()
 	{
-		for (auto& vmt : m_vmts)
+		for (VMT* vmt : s_vmts)
 			delete vmt;
-		m_vmts.clear();
+		s_vmts.clear();
 	}
 };
 

@@ -19,6 +19,12 @@ MAKE_CENUM_Q(EngineInputContextId, u32,
 	GAMEUI, 1);
 
 typedef i32 string_t;
+typedef i32 QBool;
+typedef u64 HCursor;
+struct HSCRIPT
+{ i32 unused; };
+typedef u32 HTOOLHANDLE;
+typedef u32 VPANEL;
 
 struct CUserCmd
 {

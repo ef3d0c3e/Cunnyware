@@ -117,6 +117,8 @@ IEngineClient* engine = nullptr;
 IInputSystem* inputSystem = nullptr;
 IInputInternal* inputInternal = nullptr;
 ILauncherMgr* launcherMgr = nullptr;
+IBaseClientDll* client = nullptr;
+IClientMode* clientMode = nullptr;
 
 void Interface::FindInterfaces()
 {
@@ -124,6 +126,7 @@ void Interface::FindInterfaces()
 	engine = GetInterface<IEngineClient>("./bin/linux64/engine_client.so", "VEngineClient");
 	inputSystem = GetInterface<IInputSystem>("./bin/linux64/inputsystem_client.so", "InputSystemVersion");
 	inputInternal = GetInterface<IInputInternal>("./bin/linux64/vgui2_client.so", "VGUI_InputInternal");
+	client = GetInterface<IBaseClientDll>("./csgo/bin/linux64/client_client.so", "VClient");
 
 	// launcherMgr
 	{
@@ -138,10 +141,17 @@ void Interface::FindInterfaces()
 		const auto createFn = reinterpret_cast<ILauncherMgr* (*)(void)>(GetAbsoluteAddress(addr + 12, 1, 5));
 		launcherMgr = createFn();
 	}
+
+	// clientMode
+	{
+		clientMode = reinterpret_cast<IClientMode* (*)()>(GetAbsoluteAddress(reinterpret_cast<std::uintptr_t>(getvtable(client)[10]) + 11, 1, 5))();
+	}
 }
 
 VMT* inputInternalVMT = nullptr;
 VMT* launcherMgrVMT = nullptr;
+VMT* clientVMT = nullptr;
+VMT* clientModeVMT = nullptr;
 
 void Interface::HookVMTs()
 {
@@ -150,7 +160,19 @@ void Interface::HookVMTs()
 	inputInternalVMT->HookVM(Hooks::SetMouseCodeState, 93);
 	inputInternalVMT->ApplyVMT();
 
-    launcherMgrVMT = new VMT(launcherMgr);
-    launcherMgrVMT->HookVM(Hooks::PumpWindowsMessageLoop, 19);
-    launcherMgrVMT->ApplyVMT();
+	launcherMgrVMT = new VMT(launcherMgr);
+	launcherMgrVMT->HookVM(Hooks::PumpWindowsMessageLoop, 19);
+	launcherMgrVMT->ApplyVMT();
+
+	clientVMT = new VMT(client);
+	clientVMT->HookVM(Hooks::LevelInitPostEntity, 6);
+	clientVMT->HookVM(Hooks::FrameStageNotify, 37);
+	clientVMT->ApplyVMT();
+
+	clientModeVMT = new VMT(clientMode);
+    clientModeVMT->HookVM(Hooks::OverrideView, 19);
+    clientModeVMT->HookVM(Hooks::CreateMove, 25);
+    clientModeVMT->HookVM(Hooks::ShouldDrawCrosshair, 29);
+    clientModeVMT->HookVM(Hooks::GetViewModelFov, 36);
+	clientModeVMT->ApplyVMT();
 }

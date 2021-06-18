@@ -13,10 +13,14 @@ extern IEngineClient* engine;
 extern IInputSystem* inputSystem;
 extern IInputInternal* inputInternal;
 extern ILauncherMgr* launcherMgr;
+extern IBaseClientDll* client;
+extern IClientMode* clientMode;
 
 #include "Util/VMT.hpp"
 extern VMT* inputInternalVMT;
 extern VMT* launcherMgrVMT;
+extern VMT* clientVMT;
+extern VMT* clientModeVMT;
 
 namespace Interface
 {

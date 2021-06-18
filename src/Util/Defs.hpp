@@ -34,6 +34,12 @@ typedef Vector<Vec2, 4> Mat4x2;
 typedef Vector<Vec2i, 2> Rect2i; // Rect_t
 typedef Vector<Vec3i, 2> Rect3i; // Rect3D_t
 
+struct VRect // vrect_t
+{
+	Rect2i rect;
+	VRect* next;
+};
+
 struct non_constructible
 {
 	non_constructible() noexcept = delete;

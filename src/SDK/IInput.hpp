@@ -3,9 +3,8 @@
 
 #include "ButtonCode.hpp"
 #include "IBaseInterface.hpp"
+#include  "Defs.hpp"
 
-typedef u64 HCursor;
-typedef u32 VPANEL;
 
 class IInput : public IBaseInterface
 {
