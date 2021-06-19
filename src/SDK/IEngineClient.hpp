@@ -29,7 +29,7 @@ static constexpr inline std::size_t MaxEdicts = 1<<11;
 class IEngineClient
 {
 public:
-	virtual  ~IEngineClient() = 0;
+	//virtual ~IEngineClient() = 0;
 
 	// Find the model's surfaces that intersect the given sphere.
 	// Returns the number of surfaces filled in.

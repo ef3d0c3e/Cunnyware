@@ -8,5 +8,11 @@
 #include "ILauncherMgr.hpp"
 #include "IBaseClientDLL.hpp"
 #include "IClientMode.hpp"
+#include "CEngineVGui.hpp"
+#include "IGameEventManager.hpp"
+#include "IMaterialSystem.hpp"
+#include "IVModelRender.hpp"
+#include "IVPanel.hpp"
+#include "IEngineSound.hpp"
 
 #endif // SDK_HPP

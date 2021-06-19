@@ -1,15 +1,17 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
 PROJECT("Cunnyware")
 
-SET(CMAKE_CXX_FLAGS "-std=c++2a -ldl -lpthread -fopenmp -Wall -fpic -O2 --no-gnu-unique -ftree-vectorize -s -fvisibility=hidden -fvisibility-inlines-hidden")
+SET(CMAKE_CXX_FLAGS "-std=c++2a -ldl -lpthread -fopenmp -Wall -fpic -O2 --no-gnu-unique -ftree-vectorize")
 SET(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 FILE(GLOB SOURCES
 	"src/*.cpp"
 	"src/Hooks/*.cpp"
+	"src/Hacks/*.cpp"
 	"src/Util/*.cpp"
 	"src/UI/*.cpp"
-	"src/ImGUI/*.cpp"
+	"src/UI/Tabs/*.cpp"
+	"src/ImGUI/imgui_draw.cpp"
 	"src/incbin/*.c")
 list(APPEND SOURCES "src/ImGUI/examples/imgui_impl_opengles3.cpp")
 list(APPEND SOURCES "src/ImGUI/examples/libs/gl3w/GL/gl3w.c")

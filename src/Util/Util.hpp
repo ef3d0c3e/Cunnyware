@@ -175,4 +175,22 @@ Elf64_Word GetProtectionFlags(std::uintptr_t address);
 extern long pageSize;
 std::pair<std::uintptr_t, std::size_t> getMinimumPage(std::uintptr_t addr, std::size_t len);
 
+template <class T, class... Ts>
+auto make_array(T&& t, Ts&&... ts)
+{
+	return std::array<T, sizeof...(Ts)+1>{std::forward<T>(t), std::forward<Ts>(ts)...};
+}
+
+template <class T>
+auto make_array(T&& t)
+{
+	return std::array<T, 1>{std::forward<T>(t)};
+}
+
+template <class T>
+auto make_array()
+{
+	return std::array<T, 0>{};
+}
+
 #endif // UTIL_HPP

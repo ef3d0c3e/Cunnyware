@@ -51,7 +51,7 @@ class IPaintMapDataManager;
 class ApplicationPerformanceCountersInfo;
 class ApplicationInstantCountersInfo;
 
-class IMaterialSystem : public IAppSystem, non_constructible
+class IMaterialSystem : public IAppSystem, public non_constructible
 {
 public:
 	// Placeholder for API revision

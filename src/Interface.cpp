@@ -119,6 +119,12 @@ IInputInternal* inputInternal = nullptr;
 ILauncherMgr* launcherMgr = nullptr;
 IBaseClientDll* client = nullptr;
 IClientMode* clientMode = nullptr;
+CEngineVGui* engineVGui = nullptr;
+IGameEventManager* gameEvent = nullptr;
+IMaterialSystem* material = nullptr;
+IVModelRender* modelRender = nullptr;
+IVPanel* panel = nullptr;
+IEngineSound* sound = nullptr;
 
 void Interface::FindInterfaces()
 {
@@ -127,16 +133,21 @@ void Interface::FindInterfaces()
 	inputSystem = GetInterface<IInputSystem>("./bin/linux64/inputsystem_client.so", "InputSystemVersion");
 	inputInternal = GetInterface<IInputInternal>("./bin/linux64/vgui2_client.so", "VGUI_InputInternal");
 	client = GetInterface<IBaseClientDll>("./csgo/bin/linux64/client_client.so", "VClient");
+	engineVGui = GetInterface<CEngineVGui>("./bin/linux64/engine_client.so", "VEngineVGui");
+	gameEvent = GetInterface<IGameEventManager>("./bin/linux64/engine_client.so", "GAMEEVENTSMANAGER002", true);
+	material = GetInterface<IMaterialSystem>("./bin/linux64/materialsystem_client.so", "VMaterialSystem");
+	modelRender = GetInterface<IVModelRender>("./bin/linux64/engine_client.so", "VEngineModel");
+	panel = GetInterface<IVPanel>("./bin/linux64/vgui2_client.so", "VGUI_Panel");
 
 	// launcherMgr
 	{
 		const auto addr = FindPatternInModule(
 			"launcher_client.so"s,
 			u8"\x0F\x95\x83"
-			u8"\x00\x00\x00\x00"
-			u8"\xE8"
-			u8"\x00\x00\x00\x00"
-			u8"\xE8",
+			"\x00\x00\x00\x00"
+			"\xE8"
+			"\x00\x00\x00\x00"
+			"\xE8",
 			"xxx????x????x");
 		const auto createFn = reinterpret_cast<ILauncherMgr* (*)(void)>(GetAbsoluteAddress(addr + 12, 1, 5));
 		launcherMgr = createFn();
@@ -152,6 +163,11 @@ VMT* inputInternalVMT = nullptr;
 VMT* launcherMgrVMT = nullptr;
 VMT* clientVMT = nullptr;
 VMT* clientModeVMT = nullptr;
+VMT* engineVGuiVMT = nullptr;
+VMT* gameEventVMT = nullptr;
+VMT* materialVMT = nullptr;
+VMT* modelRenderVMT = nullptr;
+VMT* panelVMT = nullptr;
 
 void Interface::HookVMTs()
 {
@@ -175,4 +191,25 @@ void Interface::HookVMTs()
     clientModeVMT->HookVM(Hooks::ShouldDrawCrosshair, 29);
     clientModeVMT->HookVM(Hooks::GetViewModelFov, 36);
 	clientModeVMT->ApplyVMT();
+
+	engineVGuiVMT = new VMT(engineVGui);
+    engineVGuiVMT->HookVM(Hooks::Paint, 15);
+	engineVGuiVMT->ApplyVMT();
+
+	gameEventVMT = new VMT(gameEvent);
+	gameEventVMT->HookVM(Hooks::FireEventClientSide, 10);
+	gameEventVMT->ApplyVMT();
+
+	materialVMT = new VMT(material);
+	materialVMT->HookVM(Hooks::OverrideConfig, 21);
+	//materialVMT->HookVM(Hooks::BeginFrame, 42);
+	materialVMT->ApplyVMT();
+
+	modelRenderVMT = new VMT(modelRender);
+	modelRenderVMT->HookVM(Hooks::DrawModelExecute, 21);
+	modelRenderVMT->ApplyVMT();
+
+	panelVMT = new VMT(panel);
+	panelVMT->HookVM(Hooks::PaintTraverse, 42);
+	panelVMT->ApplyVMT();
 }

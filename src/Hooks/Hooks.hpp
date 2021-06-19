@@ -24,6 +24,23 @@ namespace Hooks
 	bool CreateMove(void* thisptr, f32 inputSampleTime, CUserCmd* cmd);
 	bool ShouldDrawCrosshair(void* thisptr);
 	f32 GetViewModelFov(void* thisptr);
+
+	// CEngineVGui
+	void Paint(void* thisptr, PaintMode mode);
+	void PaintImGui();
+
+	// IGameEventManager
+	bool FireEventClientSide(void* thisptr, class IGameEvent* event);
+
+	// IMaterialSystem
+	void OverrideConfig(void* thisptr, MaterialSystemConfig* cfg, bool forceUpdate);
+	void BeginFrame(void* thisptr, f32 frameTime);
+
+	// IVModelRender
+	void DrawModelExecute(void* thisptr, IMatRenderContext* renderContext, const DrawModelState& state, const ModelRenderInfo& info, Mat3x4* customBoneToWorld);
+
+	// IVPanel
+	void PaintTraverse(void* thisptr, VPANEL vguiPanel, bool forceRepaint, bool allowForce);
 }
 
 namespace SDL2
@@ -50,8 +67,11 @@ namespace CreateMove
 
 namespace Paint
 {
-	extern int windowWidth;
-	extern int windowHeight;
+	extern i32 windowWidth;
+	extern i32 windowHeight;
+
+    extern i32 engineWidth;
+    extern i32 engineHeight;
 }
 
 #endif // HOOKS_HOOK_HPP

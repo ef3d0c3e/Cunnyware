@@ -15,12 +15,24 @@ extern IInputInternal* inputInternal;
 extern ILauncherMgr* launcherMgr;
 extern IBaseClientDll* client;
 extern IClientMode* clientMode;
+extern CEngineVGui* engineVGui;
+extern IGameEventManager* gameEvent;
+extern IMaterialSystem* material;
+extern IVModelRender* modelRender;
+extern IVPanel* panel;
+extern IEngineSound* sound;
 
 #include "Util/VMT.hpp"
 extern VMT* inputInternalVMT;
 extern VMT* launcherMgrVMT;
 extern VMT* clientVMT;
 extern VMT* clientModeVMT;
+extern VMT* engineVGuiVMT;
+extern VMT* gameEventVMT;
+extern VMT* materialVMT;
+extern VMT* modelRenderVMT;
+extern VMT* panelVMT;
+extern VMT* soundVMT;
 
 namespace Interface
 {
