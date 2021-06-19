@@ -39,6 +39,7 @@ namespace Settings::Style
 	// Buttons
 	extern ImU32 button_text;
 	extern ImU32 button_bg[3]; // normal, hovered, active
+	extern ImU32 button2_border;
 	extern ImU32 button2_text;
 	extern ImU32 button2_bg[3]; // normal, hovered, active
 
@@ -63,6 +64,7 @@ namespace Settings::Style
 	extern f32 checkbox_spacing;
 
 	// InputLine
+	extern ImU32 textinput_border;
 	extern ImU32 textinput_bg;
 	extern ImU32 textinput_text;
 

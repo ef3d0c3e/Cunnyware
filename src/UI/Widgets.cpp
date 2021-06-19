@@ -520,7 +520,7 @@ bool UI::Button2(const char* label, const ImVec2& size_arg)
 	if ((flags & ImGuiButtonFlags_AlignTextBaseLine) && style.FramePadding.y < window->DC.CurrentLineTextBaseOffset) // Try to vertically align buttons that are smaller/have no padding so that text baseline matches (bit hacky, since it shouldn't be a flag)
 		pos.y += window->DC.CurrentLineTextBaseOffset - style.FramePadding.y;
 	ImVec2 size = ImGui::CalcItemSize(size_arg, label_size.x + style.FramePadding.x * 2.0f + label_size.y * 6, label_size.y + style.FramePadding.y * 2.0f);
-	size.y *= 1.4;
+	size.y *= 1.2;
 
 	const ImRect bb(pos, pos + size);
 	ImGui::ItemSize(bb, style.FramePadding.y);
@@ -538,7 +538,7 @@ bool UI::Button2(const char* label, const ImVec2& size_arg)
 	const ImU32 col = (held && hovered) ? Settings::Style::button2_bg[2] : hovered ? Settings::Style::button2_bg[1] :
 																					  Settings::Style::button2_bg[0];
 	ImGui::RenderNavHighlight(bb, id);
-	ImGui::RenderFrame(bb.Min, bb.Max, col, true, 2.f);
+	RenderFrame(bb.Min, bb.Max, col, 1.f, 0.f, Settings::Style::button2_border);
 	ImGui::PushStyleColor(ImGuiCol_Text, Settings::Style::button2_text);
 	ImGui::PushFont(UI::plex_bold);
 	UI::RenderTextClipped(bb.Min + style.FramePadding, bb.Max - style.FramePadding, label, NULL, &label_size, style.ButtonTextAlign, &bb);
@@ -678,7 +678,6 @@ static bool SliderBehaviorT(const ImRect& bb, ImGuiID id, ImGuiDataType data_typ
 {
 	ImGuiContext& g = *GImGui;
 	ImGuiWindow* window = g.CurrentWindow;
-	const ImGuiStyle& style = g.Style;
 
 	const bool is_horizontal = (flags & ImGuiSliderFlags_Vertical) == 0;
 	const bool is_decimal = (data_type == ImGuiDataType_Float) || (data_type == ImGuiDataType_Double);
@@ -889,7 +888,6 @@ static bool SliderBehaviorT(const ImRect& bb, ImGuiID id, ImGuiDataType data_typ
 static bool SliderBehavior(const ImRect& frame_bb, ImGuiID id, ImGuiDataType data_type, void* v, const void* v_origin, const void* v_min, const void* v_max, const char* format, float power, ImGuiSliderFlags flags = 0)
 {
 	// Draw frame
-	ImGuiContext& g = *GImGui;
 	ImGui::RenderNavHighlight(frame_bb, id);
 
 	switch (data_type)
@@ -987,7 +985,6 @@ static bool SliderScalar(const char* label, ImGuiDataType data_type, void* v, vo
 		format = PatchFormatStringFloatToInt(format);
 
 	// Tabbing or CTRL-clicking on Slider turns it into an input box
-	bool start_text_input = false;
 	const bool tab_focus_requested = ImGui::FocusableItemRegister(window, id);
 	const bool hovered = ImGui::ItemHoverable(frame_bb, id);
 	if (tab_focus_requested || (hovered && g.IO.MouseClicked[0]) || g.NavActivateId == id || (g.NavInputId == id && g.ScalarAsInputTextId != id))
@@ -1543,7 +1540,7 @@ bool UI::InputText(const char* label, char* buf, size_t buf_size, ImVec2 size_ar
 	if (!is_multiline)
 	{
 		ImGui::RenderNavHighlight(frame_bb, id);
-		ImGui::RenderFrame(frame_bb.Min, frame_bb.Max, Settings::Style::textinput_bg, true, style.FrameRounding);
+		RenderFrame(frame_bb.Min, frame_bb.Max, Settings::Style::textinput_bg, 1.f, 0.f, Settings::Style::textinput_border);
 	}
 
 	const ImVec4 clip_rect(frame_bb.Min.x, frame_bb.Min.y, frame_bb.Min.x + size.x, frame_bb.Min.y + size.y); // Not using frame_bb.Max because we have adjusted size
@@ -2382,7 +2379,6 @@ bool UI::ColorEdit4(const char* label, ImVec4& col, ImGuiColorEditFlags flags)
 	ImGuiContext& g = *GImGui;
 	const ImGuiStyle& style = g.Style;
 	const float square_sz = ImGui::GetFrameHeight();
-	const float w_extra = (flags & ImGuiColorEditFlags_NoSmallPreview) ? 0.0f : (square_sz + style.ItemInnerSpacing.x);
 	//const float w_items_all = ImGui::CalcItemWidth() - w_extra;
 	//const char* label_display_end = ImGui::FindRenderedTextEnd(label);
 
@@ -2510,7 +2506,6 @@ bool UI::ColorEdit4(const char* label, ImColor& color, ImGuiColorEditFlags flags
 	ImGuiContext& g = *GImGui;
 	const ImGuiStyle& style = g.Style;
 	const float square_sz = ImGui::GetFrameHeight();
-	const float w_extra = (flags & ImGuiColorEditFlags_NoSmallPreview) ? 0.0f : (square_sz + style.ItemInnerSpacing.x);
 
 	ImGui::BeginGroup();
 	ImGui::PushID(label);
@@ -2530,7 +2525,6 @@ bool UI::ColorEdit4(const char* label, ImColor& color, ImGuiColorEditFlags flags
 	flags |= (g.ColorEditOptions & ~(ImGuiColorEditFlags__InputsMask | ImGuiColorEditFlags__DataTypeMask | ImGuiColorEditFlags__PickerMask));
 
 	const bool alpha = (flags & ImGuiColorEditFlags_NoAlpha) == 0;
-	const bool hdr = (flags & ImGuiColorEditFlags_HDR) != 0;
 	const int components = alpha ? 4 : 3;
 
 	// Convert to the formats we need

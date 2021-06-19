@@ -8,7 +8,7 @@ typedef std::vector<std::vector<void (*)()>> TabContent;
 namespace Tabs
 {
 	void Visuals();
-	void Settings();
+	void Configs();
 }
 
 #endif // UI_TABS_HPP

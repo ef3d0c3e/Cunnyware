@@ -28,12 +28,12 @@ void UI::Draw()
 		std::make_pair("c"sv, "Visuals"sv),
 		std::make_pair("c"sv, "Misc"sv),
 		std::make_pair("d"sv, "Skins"sv),
-		std::make_pair("e"sv, "Settings"sv),
+		std::make_pair("e"sv, "Configs"sv),
 	};
 
 	const static std::array<std::function<void()>, 6> tabs =
 	{
-		[]{}, []{}, Tabs::Visuals, []{}, []{}, Tabs::Settings,
+		[]{}, []{}, Tabs::Visuals, []{}, []{}, Tabs::Configs,
 	};
 
 	

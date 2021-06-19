@@ -35,6 +35,7 @@ namespace Settings::Style
 	// Buttons
 	ImU32 button_text = 0xFF202020;
 	ImU32 button_bg[3] = { 0xFFB8B8B8, 0xFFCCCCCC, 0xFFAAAAAA }; // normal, hovered, active
+	ImU32 button2_border = 0xFF030303;
 	ImU32 button2_text = 0xFFF0F0F0;
 	ImU32 button2_bg[3] = { 0xFF363432, 0xFF282825, 0xFF181716 }; // normal, hovered, active
 
@@ -59,8 +60,9 @@ namespace Settings::Style
 	f32 checkbox_spacing = 8.f;
 
 	// InputLine
-	ImU32 textinput_bg = 0xFFD0D0D0;
-	ImU32 textinput_text = 0xFF202020;
+	ImU32 textinput_border = 0xFF030303;
+	ImU32 textinput_bg = 0xFF363432;
+	ImU32 textinput_text = 0xFFD0D0D0;
 
 	// Combo
 	ImU32 arrow_foreground[3] = {0xFF707070, 0xFF707070, 0xFF707070}; // normal, hovered, open
