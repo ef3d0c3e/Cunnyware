@@ -4,8 +4,15 @@
 #include "../ImGUI/imgui.h"
 #include "../Util/Defs.hpp"
 
+struct ColorRGBA;
+namespace UI
+{
+	ColorRGBA ToRGBA(ImU32 col);
+}
+
 namespace Settings::Style
 {
+
 	// Window
 	extern float child_padding;
 	extern ImU32 window_bg;
@@ -81,6 +88,12 @@ namespace Settings::Style
 	// Colors
 	extern ImVec2 color_button_scale; // scale ot line height
 	extern ImU32 color_button_border;
+
+	// Notifications
+	extern ImU32 notification_bg;
+	extern ImU32 notification_text;
+	extern ImU32 notification_border;
+	extern std::array<ImU32, 2> notification_timer;
 }
 
 #endif // UI_STYLE_HPP

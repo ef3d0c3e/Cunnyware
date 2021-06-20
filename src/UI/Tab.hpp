@@ -14,7 +14,7 @@
 
 using namespace std::literals;
 
-void Child(const char* label, float elems);
+void Child(const char* label, float elems, bool scrolling = false);
 void EndChild();
 bool BeginPopupModal(const char* label, bool* p_open = NULL);
 void EndPopup();
@@ -94,7 +94,6 @@ void MakeTab(const std::array<std::string, NCategory>& categories,
 }
 
 template <std::size_t NCategory>
-__attribute__((always_inline))
 void MakeTab(const std::array<std::pair<std::string, std::vector<std::vector<void(*)(void)>>>, NCategory>& categories)
 {
 	const auto&& [w, h] = ImGui::GetContentRegionAvail();

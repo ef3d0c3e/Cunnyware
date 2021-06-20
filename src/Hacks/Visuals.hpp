@@ -1,6 +1,7 @@
 #ifndef SDK_VISUALS_HPP
 #define SDK_VISUALS_HPP
 
+	extern int meme;
 namespace Settings::Visuals
 {
 	extern bool enabled;

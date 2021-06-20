@@ -458,6 +458,13 @@ void UI::Text(const char* fmt, ...)
 	TextV(fmt, args);
 	va_end(args);
 }
+
+void UI::TextColoredUnformatted(ImU32 color, const char* label)
+{
+	ImGui::PushStyleColor(ImGuiCol_Text, color);
+	ImGui::TextUnformatted(label);
+    ImGui::PopStyleColor();
+}
 // }}}
 
 // {{{ Buttons
@@ -1057,7 +1064,7 @@ bool UI::Checkbox(const char* label, bool* v)
 																											  Settings::Style::checkbox_bg[0]),
 				1.f, 0.f, GetColor(Settings::Style::checkbox_border));
 	if (*v)
-		RenderRectGradient(check_bb.Min + ImVec2(1, 1), check_bb.Max - ImVec2(1, 1), GetColor(Settings::Style::checkmark), GetColor(Darken(Settings::Style::checkmark, 1)));
+		RenderRectGradient(check_bb.Min + ImVec2(2, 2), check_bb.Max - ImVec2(2, 2), GetColor(Settings::Style::checkmark), GetColor(Darken(Settings::Style::checkmark, 1)));
 
 	if (label_size.x > 0.0f)
 		RenderText(text_bb.Min + ImVec2(Settings::Style::checkbox_spacing, 0), label);
@@ -2640,13 +2647,13 @@ bool UI::ListBoxHeader(const char* label, const ImVec2& size_arg)
 	return true;
 }
 
-bool UI::ListBoxHeader(const char* label, int items_count, int height_in_items)
+bool UI::ListBoxHeader(const char* label, i64 items_count, int height_in_items)
 {
 	// Size default to hold ~7 items. Fractional number of items helps seeing that we can scroll down/up without looking at scrollbar.
 	// We don't add +0.40f if items_count <= height_in_items. It is slightly dodgy, because it means a dynamic list of items will make the widget resize occasionally when it crosses that size.
 	// I am expecting that someone will come and complain about this behavior in a remote future, then we can advise on a better solution.
 	if (height_in_items < 0)
-		height_in_items = ImMin(items_count, 7);
+		height_in_items = ImMin(items_count, (i64)7);
 	float height_in_items_f = height_in_items < items_count ? (height_in_items + 0.40f) : (height_in_items + 0.00f);
 
 	// We include ItemSpacing.y so that a list sized for the exact number of items doesn't make a scrollbar appears. We could also enforce that by passing a flag to BeginChild().
@@ -2672,7 +2679,7 @@ void UI::ListBoxFooter()
 	ImGui::EndGroup();
 }
 
-bool UI::ListBox(const char* label, int* current_item, bool (*items_getter)(void*, int, const char**), void* data, int items_count, int height_in_items)
+bool UI::ListBox(const char* label, i64* current_item, bool (*items_getter)(void*, int, const char**), void* data, int items_count, int height_in_items)
 {
 	if (!ListBoxHeader(label, items_count, height_in_items))
 		return false;
@@ -2702,7 +2709,7 @@ bool UI::ListBox(const char* label, int* current_item, bool (*items_getter)(void
 	return value_changed;
 }
 
-bool UI::ListBox(const char* label, int* current_item, const std::vector<std::string>& elems, int height_items)
+bool UI::ListBox(const char* label, i64* current_item, const std::vector<std::string>& elems, int height_items)
 {
 	if (!ListBoxHeader(label, elems.size(), height_items))
 		return false;
@@ -2827,3 +2834,51 @@ void UI::EndPopup()
 	ImGui::End();
 }
 // }}}
+
+
+void UI::NotificationMessage(const std::string& message, NotificationType type, f32 ratio)
+{
+	const auto label = message.c_str();
+
+	ImGuiWindow* window = ImGui::GetCurrentWindow();
+
+	ImGuiContext& g = *GImGui;
+	const ImGuiStyle& style = g.Style;
+	const ImGuiID id = window->GetID(label);
+	const ImVec2 label_size = ImGui::CalcTextSize(label, NULL, true);
+
+	ImVec2 pos = window->DC.CursorPos;
+	ImVec2 size = ImGui::CalcItemSize(ImVec2(0, 0), label_size.x + style.FramePadding.x + label_size.y * 4, label_size.y + style.FramePadding.y);
+	size.y *= 1.3;
+
+	const ImRect bb(pos, pos + size);
+	ImGui::ItemSize(ImRect(bb.Min, bb.Max + ImVec2(0, 8)), style.FramePadding.y);
+	if (!ImGui::ItemAdd(bb, id))
+		return;
+
+	// Render
+	ImGui::RenderNavHighlight(bb, id);
+	RenderFrame(bb.Min, bb.Max, Settings::Style::notification_bg, 1.0f, 1.f, Settings::Style::notification_border, ImDrawCornerFlags_Top);
+	ImGui::PushStyleColor(ImGuiCol_Text, Settings::Style::notification_text);
+	ImGui::PushFont(UI::plex_bold);
+	UI::RenderTextClipped(bb.Min + style.FramePadding, bb.Max - style.FramePadding, label, NULL, &label_size, style.ButtonTextAlign, &bb);
+	ImGui::PopFont();
+	ImGui::PopStyleColor();
+
+	window->DrawList->AddRectFilled(ImVec2(bb.Min.x+1, bb.Max.y-4), ImVec2(bb.Min.x + (bb.Max.x - bb.Min.x)*(1.f-ratio)-1, bb.Max.y), Settings::Style::notification_timer[type]);
+}
+
+void UI::Logs(const struct Messages& messages)
+{
+	for (u64 i = messages.pos; i < messages.msgs.size(); ++i)
+	{
+		if (!messages.msgs[i].message.empty())
+			UI::TextColoredUnformatted(messages.msgs[i].color, messages.msgs[i].message.c_str());
+	}
+	for (u64 i = 0; i < messages.pos; ++i)
+	{
+		if (!messages.msgs[i].message.empty())
+			UI::TextColoredUnformatted(messages.msgs[i].color, messages.msgs[i].message.c_str());
+	}
+
+}

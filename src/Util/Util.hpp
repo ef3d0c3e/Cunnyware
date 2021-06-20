@@ -153,20 +153,6 @@ std::basic_string<T> StringConvert(const std::basic_string<U>& s)
 	}
 }
 
-template <class T, class ... Ts>
-constexpr std::array<T, sizeof...(Ts)+1> make_array(T t, Ts... ts)
-{
-	static_assert( ((std::is_same_v<T, Ts>) && ...) );
-
-	std::array<T, sizeof...(Ts)+1> a;
-
-	std::size_t i = 1;
-	a[0] = t;
-	((a[i++] = ts), ...);
-
-	return a;
-}
-
 std::uintptr_t FindPattern(std::uintptr_t address, std::size_t size, const std::u8string_view& pattern, const std::string_view& mask);
 std::uintptr_t FindPatternInModule(const std::string& moduleNamme, const std::u8string_view& pattern, const std::string_view& mask);
 
@@ -181,6 +167,7 @@ auto make_array(T&& t, Ts&&... ts)
 	return std::array<T, sizeof...(Ts)+1>{std::forward<T>(t), std::forward<Ts>(ts)...};
 }
 
+/*
 template <class T>
 auto make_array(T&& t)
 {
@@ -192,5 +179,6 @@ auto make_array()
 {
 	return std::array<T, 0>{};
 }
+*/
 
 #endif // UTIL_HPP

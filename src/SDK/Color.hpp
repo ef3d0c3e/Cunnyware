@@ -107,7 +107,7 @@ struct ColorRGBA : Vector<u8, 4, __Color_container>
 {
 	using base_type = Vector<u8, 4, __Color_container>;
 	ColorRGBA(u8 _r, u8 _g, u8 _b, u8 _a = 255) noexcept:
-		base_type(_a, _g, _b, _a)
+		base_type(_a, _r, _g, _b)
 	{}
 
 	~ColorRGBA() {}

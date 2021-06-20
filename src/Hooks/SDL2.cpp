@@ -241,6 +241,7 @@ static void SwapWindow(SDL_Window* window)
 		ImGui::PopStyleVar();
 
 		UI::Draw();
+		UI::DrawNotifications();
 		Hooks::PaintImGui();
 
 		ImGui::End();

@@ -8,6 +8,7 @@
 #include <vector>
 #include <string>
 
+
 namespace UI
 {
 	void RenderText(ImVec2 pos, const char* text, const char* text_end = NULL, bool hide_text_after_hash = true);
@@ -25,6 +26,7 @@ namespace UI
 	void TextUnformatted(const char* text, const char* text_end = NULL);
 	void TextV(const char* fmt, va_list args);
 	void Text(const char* label, ...);
+	void TextColoredUnformatted(ImU32 color, const char* label);
 
 	bool Button(const char* label, const ImVec2& size_args = ImVec2(0, 0));
 	bool Button2(const char* label, const ImVec2& size_args = ImVec2(0, 0)); // button was so great they made a button 2
@@ -82,16 +84,19 @@ namespace UI
 	};
 
 	bool ListBoxHeader(const char* label, const ImVec2& size_arg);
-	bool ListBoxHeader(const char* label, int items_count, int height_in_items);
+	bool ListBoxHeader(const char* label, i64 items_count, int height_in_items);
 	void ListBoxFooter();
-	bool ListBox(const char* label, int* current_item, bool (*items_getter)(void*, int, const char**), void* data, int items_count, int height_in_items = -1);
-	bool ListBox(const char* label, int* current_item, const std::vector<std::string>& elems, int height_items = 6);
+	bool ListBox(const char* label, i64* current_item, bool (*items_getter)(void*, int, const char**), void* data, int items_count, int height_in_items = -1);
+	bool ListBox(const char* label, i64* current_item, const std::vector<std::string>& elems, int height_items = 6);
 
 	void OpenPopupEx(ImGuiID id);
 	void OpenPopup(const char* str_id);
 	bool BeginPopupEx(ImGuiID id, ImGuiWindowFlags extra_flags = 0);
 	bool BeginPopup(const char* str_id, ImGuiWindowFlags flags = 0);
 	void EndPopup();
+
+	void NotificationMessage(const std::string& message, struct NotificationType type, f32 ratio);
+	void Logs(const struct Messages& messages);
 }
 
 #endif // UI_WIDGETS_HPP

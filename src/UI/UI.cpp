@@ -2,6 +2,7 @@
 #include "Tab.hpp"
 #include "Tabs/Tabs.hpp"
 #include "../Interface.hpp"
+#include <fmt/chrono.h>
 
 #include "Image.hpp"
 #define INCBIN_PREFIX res
@@ -79,8 +80,8 @@ void UI::Draw()
 		}
 
 		//ImGui::PushFont(UI::title_font);
-		const auto x_title = ImGui::GetCursorPosX() + (ImGui::GetContentRegionAvailWidth() - ImGui::CalcTextSize("Cunnyware").x)/2;
-		const auto h_title = ImGui::GetWindowSize().y;
+		//const auto x_title = ImGui::GetCursorPosX() + (ImGui::GetContentRegionAvailWidth() - ImGui::CalcTextSize("Cunnyware").x)/2;
+		//const auto h_title = ImGui::GetWindowSize().y;
 		//ImGui::PopFont();
 		ImGui::EndChild();
 
@@ -115,4 +116,58 @@ void UI::Draw()
 	}
 	ImGui::End();
 
+}
+
+void UI::AddNotification(const std::string& message, NotificationType type, u64 duration)
+{
+	const auto now = std::chrono::high_resolution_clock::now();
+	notifications.push_back(Notification{
+		.message = message,
+		.type = type,
+		.duration = std::chrono::milliseconds(duration),
+		.start = now,
+	});
+	AddMessage(fmt::format("|{:%H:%M:%S}| {}", now, message), Settings::Style::notification_timer[type]);
+}
+
+std::deque<UI::Notification> UI::notifications = {};
+void UI::DrawNotifications()
+{
+	const auto now = std::chrono::high_resolution_clock::now();
+	
+	ImGui::SetCursorPosY(8);
+	for (auto it = UI::notifications.cbegin(); it != UI::notifications.cend();)
+	{
+		if (it->start + it->duration <= now)
+		{
+			it = UI::notifications.erase(it);
+			continue;
+		}
+
+		const f32 ratio = 
+			static_cast<f32>(std::chrono::duration_cast<std::chrono::milliseconds>(now - it->start).count()) /
+			std::chrono::duration_cast<std::chrono::milliseconds>(it->duration).count();
+		
+		ImGui::Spacing();
+		ImGui::SetCursorPosX(8);
+		UI::NotificationMessage(it->message, it->type, ratio);
+		++it;
+	}
+}
+
+UI::Messages UI::messages = UI::Messages
+{
+	.msgs = std::vector<UI::LogMessage>(UI::Messages::Nums),
+	.pos = 0
+};
+void UI::AddMessage(const std::string& message, ImU32 color)
+{
+	messages.msgs[messages.pos] = UI::LogMessage
+	{
+		.color = color,
+		.message = message,
+		.start = std::chrono::high_resolution_clock::now(),
+	};
+
+	messages.pos = (messages.pos+1) % UI::Messages::Nums;
 }

@@ -1,4 +1,12 @@
 #include "Style.hpp"
+#include "../SDK/Color.hpp"
+
+ColorRGBA UI::ToRGBA(ImU32 col)
+{
+	const auto v = *reinterpret_cast<const Vector<u8, 4>*>(&col);
+
+	return ColorRGBA(v.x, v.w, v.z, v.y);
+}
 
 namespace Settings::Style
 {
@@ -77,4 +85,12 @@ namespace Settings::Style
 	// Colors
 	ImVec2 color_button_scale(1.3f, .7f);
 	ImU32 color_button_border = 0x50FFFFFF;
+
+	ImU32 notification_bg = 0xFF1F1F1F;
+	ImU32 notification_text = 0xFFD0D0D0;
+	ImU32 notification_border = 0xFF202020;
+	std::array<ImU32, 2> notification_timer =
+	{
+		0xFFFA8090, 0xFF9080FA
+	};
 }
