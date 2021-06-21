@@ -14,5 +14,6 @@
 #include "IVModelRender.hpp"
 #include "IVPanel.hpp"
 #include "IEngineSound.hpp"
+#include "IClientEntityList.hpp"
 
 #endif // SDK_HPP

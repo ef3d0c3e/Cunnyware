@@ -6,15 +6,18 @@ class IClientUnknown;
 struct model_t;
 class ClientRenderHandle;
 class IPVSNotify;
+class ClientModelRenderable;
 
 typedef u16 ClientShadowHandle;
 typedef u16 ModelInstanceHandle;
 
-MAKE_CENUM_Q(ShadowType, u32, NONE, 0, SIMPLE, 1, RENDER_TO_TEXTURE, 2, RENDER_TO_TEXTURE_DYNAMIC, 3, // the shadow is always changing state
-			 RENDER_TO_DEPTH_TEXTURE,
-			 4,
-			 RENDER_TO_TEXTURE_DYNAMIC_CUSTOM,
-			 5, // changing, and entity uses custom rendering code for shadow
+MAKE_CENUM_Q(ShadowType, u32,
+	NONE, 0,
+	SIMPLE, 1,
+	RENDER_TO_TEXTURE, 2,
+	RENDER_TO_TEXTURE_DYNAMIC, 3, // the shadow is always changing state
+	RENDER_TO_DEPTH_TEXTURE, 4,
+	RENDER_TO_TEXTURE_DYNAMIC_CUSTOM, 5, // changing, and entity uses custom rendering code for shadow
 );
 
 struct RenderableInstance
@@ -97,6 +100,8 @@ public:
 	// Returns the shadow cast type
 	virtual ShadowType ShadowCastType() = 0;
 
+	virtual void Unused2() = 0;
+
 	// Create/get/destroy model instance
 	virtual void CreateModelInstance() = 0;
 	virtual ModelInstanceHandle GetModelInstance() = 0;
@@ -108,6 +113,7 @@ public:
 	virtual i32 LookupAttachment(const char* attachmentName) = 0;
 	virtual bool GetAttachment(i32 number, Vec3& origin, QAngle& angles) = 0;
 	virtual bool GetAttachment(i32 number, Mat3x4& matrix) = 0;
+	virtual bool ComputeLightingOrigin(i32 attachmentIndex, Vec3 modelLightingCenter, const Mat3x4& matrix, Vec3& transformedLightingCenter) = 0;
 
 	// Rendering clip plane, should be 4 f32s, return value of NULL indicates a disabled render clip plane
 	virtual f32* GetRenderClipPlane() = 0;
@@ -132,6 +138,8 @@ public:
 	// is the alpha computed based on the current renderfx + any override
 	// computed in OverrideAlphaModulation
 	virtual u8 OverrideShadowAlphaModulation(u8 alpha) = 0;
+
+	virtual IClientModelRenderable* GetClientModelRenderable() = 0;
 };
 
 #endif // SDK_ICLIENTRENDERABLE_HPP

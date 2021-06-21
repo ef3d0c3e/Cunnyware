@@ -83,9 +83,10 @@ namespace Settings::Style
 	float combo_vertical_padding = 4.f;
 
 	// Colors
-	ImVec2 color_button_scale(1.3f, .7f);
-	ImU32 color_button_border = 0x50FFFFFF;
+	ImVec2 color_button_scale(1.0f, .6f);
+	ImU32 color_button_border = 0xFF000000;
 
+	// Notifications
 	ImU32 notification_bg = 0xFF1F1F1F;
 	ImU32 notification_text = 0xFFD0D0D0;
 	ImU32 notification_border = 0xFF202020;
@@ -93,4 +94,9 @@ namespace Settings::Style
 	{
 		0xFFFA8090, 0xFF9080FA
 	};
+
+	// Pie
+	ImU32 pie_text = 0xFFFFFFFF;
+	ImU32 pie_button[3] = { 0xFF363432, 0xFF282825, 0xFF181716 };;
+	ImU32 pie_bg = 0xF01C1C1C;
 }

@@ -252,16 +252,16 @@ void Config::Save(const std::string& name)
 		switch (e.second.type)
 		{
 			case Var::BOOL:
-				file.put(*reinterpret_cast<const char(&)[sizeof(bool)]>(e.second.p));
+				file.put(*reinterpret_cast<const char*>(e.second.p));
 				break;
 			case Var::I32:
-				file.write(reinterpret_cast<const char(&)[sizeof(i32)]>(e.second.p), sizeof(i32));
+				file.write(reinterpret_cast<const char*>(e.second.p), sizeof(i32));
 				break;
 			case Var::F32:
-				file.write(reinterpret_cast<const char(&)[sizeof(f32)]>(e.second.p), sizeof(f32));
+				file.write(reinterpret_cast<const char*>(e.second.p), sizeof(f32));
 				break;
 			case Var::IMVEC4:
-				file.write(reinterpret_cast<const char(&)[sizeof(ImVec4)]>(e.second.p), sizeof(ImVec4));
+				file.write(reinterpret_cast<const char*>(e.second.p), sizeof(ImVec4));
 				break;
 			case Var::STRING:
 				file.write(reinterpret_cast<const char*>(e.second.p), strlen(reinterpret_cast<const char*>(e.second.p)));

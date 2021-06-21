@@ -1,5 +1,5 @@
-#ifndef HOOKER_HPP
-#define HOOKER_HPP
+#ifndef UTIL_HOOKER_HPP
+#define UTIL_HOOKER_HPP
 
 #include <sys/mman.h>
 #include <cstring>
@@ -82,4 +82,4 @@ public:
 	}
 };
 
-#endif // HOOKER_HPP
+#endif // UTIL_HOOKER_HPP

@@ -40,6 +40,7 @@ MAKE_CENUM_Q(ClientFrameStage, i32,
 
 class IBaseClientDll
 {
+public:
 	virtual ~IBaseClientDll() = 0;
 
 	// Connect appsystem components, get global interfaces, don't run any other init code

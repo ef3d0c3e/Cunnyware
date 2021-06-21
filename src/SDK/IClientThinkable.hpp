@@ -4,7 +4,7 @@
 class IClientUnknown;
 class CClientThinkHandlePtr;
 
-typedef CClientThinkHandlePtr* ClientThinkHandle_t;
+typedef CClientThinkHandlePtr* ClientThinkHandle;
 
 class IClientThinkable
 {
@@ -16,8 +16,8 @@ public:
 
 	// Called when you're added to the think list.
 	// GetThinkHandle's return value must be initialized to INVALID_THINK_HANDLE.
-	virtual ClientThinkHandle_t GetThinkHandle() = 0;
-	virtual void SetThinkHandle(ClientThinkHandle_t hThink) = 0;
+	virtual ClientThinkHandle GetThinkHandle() = 0;
+	virtual void SetThinkHandle(ClientThinkHandle hThink) = 0;
 
 	// Called by the client when it deletes the entity.
 	virtual void Release() = 0;

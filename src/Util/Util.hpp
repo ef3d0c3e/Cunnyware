@@ -13,6 +13,7 @@
 #include "Cenum.hpp"
 #include "Defs.hpp"
 #include "Redir.hpp"
+#include "VTableCounter.hpp"
 
 template <typename T>
 std::string type_name()
@@ -166,19 +167,5 @@ auto make_array(T&& t, Ts&&... ts)
 {
 	return std::array<T, sizeof...(Ts)+1>{std::forward<T>(t), std::forward<Ts>(ts)...};
 }
-
-/*
-template <class T>
-auto make_array(T&& t)
-{
-	return std::array<T, 1>{std::forward<T>(t)};
-}
-
-template <class T>
-auto make_array()
-{
-	return std::array<T, 0>{};
-}
-*/
 
 #endif // UTIL_HPP

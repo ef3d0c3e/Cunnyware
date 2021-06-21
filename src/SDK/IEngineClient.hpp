@@ -107,6 +107,9 @@ public:
 	// Given the name of the key "mouse1", "e", "tab", etc., return the string it is bound to "+jump", "impulse 50", etc.
 	virtual const char* Key_BindingForKey(ButtonCode& code) = 0;
 
+	// Bind a key
+	virtual void Key_SetBinding(ButtonCode code, const char *binding) = 0;
+
 	// key trapping (for binding keys)
 	virtual void StartKeyTrapMode() = 0;
 	virtual bool CheckDoneKeyTrapping(ButtonCode& code) = 0;

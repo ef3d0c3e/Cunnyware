@@ -94,6 +94,11 @@ namespace Settings::Style
 	extern ImU32 notification_text;
 	extern ImU32 notification_border;
 	extern std::array<ImU32, 2> notification_timer;
+
+	// Pie
+	extern ImU32 pie_text;
+	extern ImU32 pie_button[3]; // normal, hovered, selected
+	extern ImU32 pie_bg;
 }
 
 #endif // UI_STYLE_HPP

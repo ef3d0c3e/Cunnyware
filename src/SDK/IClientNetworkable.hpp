@@ -62,6 +62,7 @@ public:
 	// Only low-level entities should need to know about these.
 	virtual void PreDataUpdate(DataUpdateType updateType) = 0;
 	virtual void PostDataUpdate(DataUpdateType updateType) = 0;
+	virtual void OnDataUnchangedInPVS() = 0;
 
 
 	// Objects become dormant on the client if they leave the PVS on the server.

@@ -21,6 +21,7 @@ extern IMaterialSystem* material;
 extern IVModelRender* modelRender;
 extern IVPanel* panel;
 extern IEngineSound* sound;
+extern IClientEntityList* entityList;
 
 #include "Util/VMT.hpp"
 extern VMT* inputInternalVMT;

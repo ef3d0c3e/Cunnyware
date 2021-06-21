@@ -7,8 +7,17 @@ class IHandleEntity;
 struct Ray;
 struct trace_t;
 struct model_t;
-enum SolidType;
 class IClientUnknown;
+
+MAKE_CENUM_Q(SolidType, u32,
+	NONE, 0,     // no solid model
+	BSP, 1,      // a BSP tree
+	BBOX, 2,     // an AABB
+	OBB, 3,      // an OBB (not implemented yet)
+	OBB_YAW, 4,  // an OBB, constrained so that it can only yaw
+	CUSTOM, 5,   // Always call into the entity for tests
+	VPHYSICS, 6, // solid vphysics object, get vcollide from the model and collide with that
+);
 
 class ICollideable
 {

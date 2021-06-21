@@ -67,15 +67,20 @@ void Main()
 
 			if (UI::Button2("Save", ImVec2(-1, 0)))
 			{
-				try
+				if (static_cast<u64>(configItemCurrent) >= configItems.size()) // -1 is covered
+					UI::AddNotification("No configuration selected!", UI::NotificationType::ERROR, 5000);
+				else
 				{
-					Config::Save(configItems[configItemCurrent]);
-					configItems = Config::GetConfigs();
-					UI::AddNotification("Configuraton saved!", UI::NotificationType::MESSAGE, 1500);
-				}
-				catch (Exception& e)
-				{
-					UI::AddNotification(e.what(), UI::NotificationType::ERROR, 5000);
+					try
+					{
+						Config::Save(configItems[configItemCurrent]);
+						configItems = Config::GetConfigs();
+						UI::AddNotification("Configuraton saved!", UI::NotificationType::MESSAGE, 1500);
+					}
+					catch (Exception& e)
+					{
+						UI::AddNotification(e.what(), UI::NotificationType::ERROR, 5000);
+					}
 				}
 			}
 

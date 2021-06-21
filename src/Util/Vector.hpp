@@ -249,13 +249,23 @@ public:
 	///
 	/// \tparam R The new scalar type
 	////////////////////////////////////////////////////////////
+
 	template <typename R>
-	explicit operator Vector<R, N, B, S>() const noexcept
+	operator Vector<R, N, B, S> () const noexcept
 	{
 		Vector<R, N, B, S> r;
 		vector_foreach_do(r[i] = static_cast<R>(operator[](i)));
 		return r;
 	}
+
+	template <typename R>
+	Vector<R, N, B, S> as() const noexcept
+	{
+		Vector<R, N, B, S> r;
+		vector_foreach_do(r[i] = static_cast<R>(operator[](i)));
+		return r;
+	}
+
 
 	////////////////////////////////////////////////////////////
 	/// \brief std::initializer_list constructor

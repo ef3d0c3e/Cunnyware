@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <fcntl.h>
+#include "Hooker.hpp"
 
 using namespace std::literals;
 
@@ -125,6 +126,7 @@ IMaterialSystem* material = nullptr;
 IVModelRender* modelRender = nullptr;
 IVPanel* panel = nullptr;
 IEngineSound* sound = nullptr;
+IClientEntityList* entityList = nullptr;
 
 void Interface::FindInterfaces()
 {
@@ -138,6 +140,7 @@ void Interface::FindInterfaces()
 	material = GetInterface<IMaterialSystem>("./bin/linux64/materialsystem_client.so", "VMaterialSystem");
 	modelRender = GetInterface<IVModelRender>("./bin/linux64/engine_client.so", "VEngineModel");
 	panel = GetInterface<IVPanel>("./bin/linux64/vgui2_client.so", "VGUI_Panel");
+	entityList = GetInterface<IClientEntityList>("./csgo/bin/linux64/client_client.so", "VClientEntityList");
 
 	// launcherMgr
 	{
@@ -157,6 +160,11 @@ void Interface::FindInterfaces()
 	{
 		clientMode = reinterpret_cast<IClientMode* (*)()>(GetAbsoluteAddress(reinterpret_cast<std::uintptr_t>(getvtable(client)[10]) + 11, 1, 5))();
 	}
+
+	// Hooker
+	Hooker::FindPlayerAnimStateOffset();
+	Hooker::FindPlayerAnimOverlayOffset();
+	Hooker::FindAbsFunctions();
 }
 
 VMT* inputInternalVMT = nullptr;
@@ -202,7 +210,7 @@ void Interface::HookVMTs()
 
 	materialVMT = new VMT(material);
 	materialVMT->HookVM(Hooks::OverrideConfig, 21);
-	//materialVMT->HookVM(Hooks::BeginFrame, 42);
+	materialVMT->HookVM(Hooks::BeginFrame, 42);
 	materialVMT->ApplyVMT();
 
 	modelRenderVMT = new VMT(modelRender);

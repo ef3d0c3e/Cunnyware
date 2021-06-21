@@ -8,6 +8,7 @@
 #include "Hooks/Hooks.hpp"
 #include <unistd.h>
 #include <stdio.h>
+#include "SDK/C_BaseEntity.hpp"
 
 ////////////////////////////////////////////////
 /// \brief Failed bit, set to true if failed during initialization
@@ -31,7 +32,10 @@ void Start()
 		SDL2::Hook();
 		Interface::HookVMTs();
 
-		cvar->ConsoleColorPrintf(ColorRGBA(0, 255, 0), "Cunnyware has been successfully loaded!\n");
+		cvar->ConsoleColorPrintf(ColorRGBA(255, 255, 255, 255), "Cunnyware has been successfully loaded!\n");
+
+		auto idx = VMTIndex<C_BaseEntity>(&C_BaseEntity::GetAbsOrigin);
+		cvar->ConsoleColorPrintf(ColorRGBA(255, 255, 255, 255), "index =  %d\n", idx);
 	}
 	catch (Exception& e)
 	{

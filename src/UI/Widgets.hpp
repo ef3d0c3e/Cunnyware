@@ -74,10 +74,10 @@ namespace UI
 	template <class... Ts>
 	void ColorEdit(const Ts&... t) //label, colorvar
 	{
-		static_assert(( (std::is_same_v<Ts, std::pair<std::string, ImColor*>> || std::is_same_v<Ts, std::pair<std::string, ImColor*>>) && ... ));
+		static_assert(( (std::is_same_v<Ts, std::pair<std::string, ImColor*>> || std::is_same_v<Ts, std::pair<std::string, ImVec4*>>) && ... ));
 
 		const auto width = ImGui::GetFrameHeight() * Settings::Style::color_button_scale.x + ImGui::GetStyle().ItemSpacing.x + 2.f; // 2.f -> border
-		const auto x = ImGui::GetContentRegionMax().x - width*sizeof...(Ts) + ImGui::GetStyle().ItemSpacing.x;
+		const auto x = ImGui::GetContentRegionAvailWidth() - width*sizeof...(Ts) + ImGui::GetStyle().ItemSpacing.x;
 
 		std::size_t i = 0;
 		((ImGui::SameLine(x+width*i), ++i, UI::ColorEdit4(t.first.c_str(), *t.second)), ...);
@@ -97,6 +97,7 @@ namespace UI
 
 	void NotificationMessage(const std::string& message, struct NotificationType type, f32 ratio);
 	void Logs(const struct Messages& messages);
+	i32 PieMenu(const ImVec2& center, const char* popup_id, const std::vector<std::string>& items, i32* p_selected);
 }
 
 #endif // UI_WIDGETS_HPP

@@ -1,6 +1,6 @@
 #include "Hooks.hpp"
 
-void BeginFrame(void* thisptr, f32 frameTime)
+void Hooks::BeginFrame(void* thisptr, f32 frameTime)
 {
 	if (!engine->IsInGame())
 		CreateMove::sendPacket = true;
