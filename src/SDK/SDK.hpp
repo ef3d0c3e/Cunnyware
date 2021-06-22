@@ -15,5 +15,6 @@
 #include "IVPanel.hpp"
 #include "IEngineSound.hpp"
 #include "IClientEntityList.hpp"
+#include "IVDebugOverlay.hpp"
 
 #endif // SDK_HPP

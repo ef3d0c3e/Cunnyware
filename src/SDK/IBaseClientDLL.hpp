@@ -4,6 +4,9 @@
 #include "IAppSystem.hpp"
 #include "ButtonCode.hpp"
 #include "Defs.hpp"
+#include "CUtl/Vector.hpp"
+#include "CUtl/Memory.hpp"
+#include "CUtl/MemoryAligned.hpp"
 
 class CGlobalVarsBase;
 class ClientClass;
@@ -18,6 +21,17 @@ class datamap_t;
 class typedescription_t;
 class CStandardRecvProxies;
 class IClientEntity;
+class CJob;
+class IReplayFactory;
+class WriteReplayScreenshotParams;
+class ClientDLLObserverMode;
+class SpatializationInfo;
+class CDemoPlaybackParameters;
+class IScaleformSlotInitController;
+class CSVCMsg_HltvReplay;
+class PublishedFileId;
+class CEngineGotvSyncPacket;
+class ICvar;
 struct InputEvent;
 
 MAKE_CENUM_Q(ClientFrameStage, i32,
@@ -41,10 +55,9 @@ MAKE_CENUM_Q(ClientFrameStage, i32,
 class IBaseClientDll
 {
 public:
-	virtual ~IBaseClientDll() = 0;
-
 	// Connect appsystem components, get global interfaces, don't run any other init code
 	virtual i32 Connect(CreateInterfaceFn appSystemFactory, CGlobalVarsBase* globals) = 0;
+	virtual void Disconnect() = 0;
 
 	// run other init code here
 	virtual i32 Init(CreateInterfaceFn appSystemFactory, CGlobalVarsBase* globals) = 0;
@@ -74,6 +87,9 @@ public:
 	virtual void HudReset() = 0;
 	// Display a hud text message
 	virtual void HudText(const char* message) = 0;
+
+	// Draw the console overlay?
+	virtual bool ShouldDrawDropdownConsole() = 0;
 
 	// Mouse Input Interfaces
 	// Activate the mouse (hides the cursor and locks it to the center of the screen)
@@ -106,20 +122,20 @@ public:
 
 	// Encode the delta (changes) between the CUserCmd in slot from vs the one in slot to.  The game code will have
 	//  matching logic to read the delta.
-	virtual bool WriteUsercmdDeltaToBuffer(i32 nSlot, bf_write* buf, i32 from, i32 to, bool isnewcommand) = 0;
+	virtual bool WriteUsercmdDeltaToBuffer(i32 slot, bf_write* buf, i32 from, i32 to, bool isNewCommand) = 0;
 	// Demos need to be able to encode/decode CUserCmds to memory buffers, so these functions wrap that
-	virtual void EncodeUserCmdToBuffer(i32 nSlot, bf_write& buf, i32 slot) = 0;
-	virtual void DecodeUserCmdFromBuffer(i32 nSlot, bf_read& buf, i32 slot) = 0;
+	virtual void EncodeUserCmdToBuffer(i32 nslot, bf_write& buf, i32 slot) = 0;
+	virtual void DecodeUserCmdFromBuffer(i32 nslot, bf_read& buf, i32 slot) = 0;
 
 	// Set up and render one or more views (e.g., rear view window, etc.).  This called into RenderView below
 	virtual void View_Render(VRect* rect) = 0;
 
 	// Allow engine to expressly render a view (e.g., during timerefresh)
 	// See IVRenderView.h, PushViewFlags_t for nFlags values
-	virtual void RenderView(const CViewSetup& view, i32 clearFlags, i32 whatToDraw) = 0;
+	virtual void RenderView(const CViewSetup& view, i32 nClearFlags, i32 whatToDraw) = 0;
 
 	// Apply screen fade directly from engine
-	virtual void View_Fade(ScreenFade* SF) = 0;
+	virtual void View_Fade(ScreenFade* sf) = 0;
 
 	// The engine has parsed a crosshair angle message, this function is called to dispatch the new crosshair angle
 	virtual void SetCrosshairAngle(const QAngle& angle) = 0;
@@ -138,6 +154,9 @@ public:
 	// entindex is GetPlayer() when the server acknowledges that the local client is talking.
 	virtual void VoiceStatus(i32 entindex, i32 iSsSlot, QBool talking) = 0;
 
+	// returns false if the player can't hear the other client due to game rules (eg. the other team)
+	virtual bool PlayerAudible(i32 iPlayerIndex) = 0;
+
 	// Networked string table definitions have arrived, allow client .dll to
 	//  hook string changes with a callback function ( see INetworkStringTableClient.h )
 	virtual void InstallStringTableCallback(char const* tableName) = 0;
@@ -146,7 +165,7 @@ public:
 	virtual void FrameStageNotify(ClientFrameStage curStage) = 0;
 
 	// The engine has received the specified user message, this code is used to dispatch the message handler
-	virtual bool DispatchUserMessage(i32 msg_type, bf_read& msg_data) = 0;
+	virtual bool DispatchUserMessage(i32 msg_type, i32 flags, i32 size, const void* msg) = 0; // New protobuf version
 
 	// Save/restore system hooks
 	virtual CSaveRestoreData* SaveInit(i32 size) = 0;
@@ -179,7 +198,10 @@ public:
 	virtual void OnDemoRecordStart(char const* demoBaseName) = 0;
 	virtual void OnDemoRecordStop() = 0;
 	virtual void OnDemoPlaybackStart(char const* demoBaseName) = 0;
+	virtual void OnDemoPlaybackRestart() = 0;
 	virtual void OnDemoPlaybackStop() = 0;
+	virtual void SetDemoPlaybackHighlightXuid(u64 xuid, bool lowlights) = 0;
+	virtual void ShowHighlightSkippingMessage(bool state, i32 currentTick = 0, i32 tickStart = 0, i32 tickStop = 0) = 0;
 
 	// Demo polish callbacks.
 	virtual void RecordDemoPolishUserInput(i32 cmdIndex) = 0;
@@ -187,10 +209,28 @@ public:
 	// Cache replay ragdolls
 	virtual bool CacheReplayRagdolls(const char* filename, i32 startTick) = 0;
 
-	// Added interface
+	// Send a message to the Replay UI
+	virtual void ReplayUI_SendMessage(KeyValues* msg) = 0;
 
+	// Get the client replay factory
+	virtual IReplayFactory* GetReplayFactory() = 0;
+
+	// Clear out the local player's replay pointer so it doesn't get deleted
+	virtual void ClearLocalPlayerReplayPtr() = 0;
+
+	// Get client screen dimensions
+	virtual i32 GetScreenWidth() = 0;
+	virtual i32 GetScreenHeight() = 0;
+
+	// Added interface
 	// save game screenshot writing
-	virtual void WriteSaveGameScreenshotOfSize(const char* filename, i32 width, i32 height) = 0;
+	virtual void WriteSaveGameScreenshotOfSize(const char* filename, i32 width, i32 height, bool createPowerOf2Padded = false, bool writeVTF = false) = 0;
+
+	// Write a .VTF screenshot to disk for the replay system
+	virtual void WriteReplayScreenshot(WriteReplayScreenshotParams& params) = 0;
+
+	// Reallocate memory for replay screenshots - called if user changes resolution or if the convar "replay_screenshotresolution" changes
+	virtual void UpdateReplayScreenshotCache() = 0;
 
 	// Gets the current view
 	virtual bool GetPlayerView(CViewSetup& playerView) = 0;
@@ -205,9 +245,11 @@ public:
 	// We are entering into/leaving split screen mode (or # of players is changing)
 	virtual void OnSplitScreenStateChanged() = 0;
 
+	virtual i32 GetSpectatorTarget(ClientDLLObserverMode* observerMode) = 0;
+
 	virtual void CenterStringOff() = 0;
 
-	virtual void OnScreenSizeChanged(i32 oldWidth, i32 oldHeight) = 0;
+	virtual void OnScreenSizeChanged(i32 nOldWidth, i32 nOldHeight) = 0;
 
 	virtual IMaterialProxy* InstantiateMaterialProxy(const char* proxyName) = 0;
 
@@ -226,7 +268,76 @@ public:
 	// Function must return true if the key event was handled
 	virtual bool HandleGameUIEvent(const InputEvent& event) = 0;
 
-	virtual bool SupportsRandomMaps() = 0;
+	// check if the client needs to alter non-entity associated sound locations (portal2, multiple sources, etc.)
+	virtual bool GetSoundSpatialization(SpatializationInfo& info) = 0;
+
+	// sending a hint to the hud
+	virtual void Hud_SaveStarted() = 0;
+
+	virtual void ShutdownMovies() = 0;
+
+	virtual void GetStatus(char* buffer, i32 bufsize) = 0;
+
+	// find out if the chat display is up
+#if defined(CSTRIKE15)
+	virtual bool IsChatRaised() = 0;
+	virtual bool IsRadioPanelRaised() = 0;
+	virtual bool IsBindMenuRaised() = 0;
+	virtual bool IsTeamMenuRaised() = 0;
+	virtual bool IsLoadingScreenRaised() = 0;
+
+#endif
+
+	virtual bool IsBuildWRThreaded() = 0;
+	virtual void QueueBuildWorldListJob(CJob* pJob) = 0;
+	virtual void CacheFrustumData(const Frustum_t& frustum, const CUtlVector<Frustum_t, CUtlMemoryAligned<Frustum_t, 16>>& aeraFrustums) = 0;
+	virtual const Frustum_t* GetBuildViewFrustum() const = 0;
+	virtual const CUtlVector<Frustum_t, CUtlMemoryAligned<Frustum_t, 16>>* GetBuildViewAeraFrustums() const = 0;
+
+	virtual bool IsSubscribedMap(const char* mapName, bool onlyOnDisk) = 0;
+	virtual bool IsFeaturedMap(const char* mapName, bool onlyOnDisk) = 0;
+
+	// Gets file info for a workshop map, downloads latest version if needed
+	virtual void DownloadCommunityMapFile(PublishedFileId id) = 0;
+
+	// Return download progress from 0.0 - 1.0, or -1.0 on error
+	virtual f32 GetUGCFileDownloadProgress(PublishedFileId id) = 0;
+
+	virtual void RecordUIEvent(const char* event) = 0;
+
+	// Inventory access
+	virtual f32 FindInventoryItemWithMaxAttributeValue(char const* itemType, char const* attrClass) = 0;
+
+	// Inventory access
+	virtual void DetermineSubscriptionKvToAdvertise(KeyValues* kvLocalPlayer) = 0;
+
+	// Evidence validation
+	virtual bool ValidateSignedEvidenceHeader(char const* key, void const* header, CDemoPlaybackParameters* playbackParameters) = 0;
+	virtual void PrepareSignedEvidenceData(void* pvData, i32 numBytes, CDemoPlaybackParameters const* playbackParameters) = 0;
+	virtual bool ShouldSkipEvidencePlayback(CDemoPlaybackParameters const* playbackParameters) = 0;
+
+	// Scaleform slot controller
+	virtual IScaleformSlotInitController* GetScaleformSlotInitController() = 0;
+
+	virtual bool IsConnectedUserInfoChangeAllowed(ICvar* cvar) = 0;
+
+	virtual char const* GetRichPresenceStatusString() = 0;
+
+	// Returns true if the client can stop recording a demo now.  If the client returns false,
+	// an error message of up to length bytes should be returned in errorMsg.
+	virtual bool CanStopRecordDemo(char* errorMsg, i32 length) const = 0;
+
+	virtual void OnHltvReplay(const CSVCMsg_HltvReplay& msg) = 0;
+	virtual void OnHltvReplayTick() = 0;
+	virtual i32 GetHltvReplayDelay() = 0;
+
+	virtual void OnDemoPlaybackTimeJump() = 0;
+	virtual void OnCommandDuringPlayback(char const* cmd) = 0;
+
+	virtual void RetireAllPlayerDecals(bool renderContextValid) = 0;
+	virtual void EngineGotvSyncPacket(const CEngineGotvSyncPacket* pkt) = 0; // Engine asking GC for a sync packet
+	virtual i32 GetInEyeEntity() const = 0;
+	virtual void OnTickPre(i32 tickcount) = 0;
 };
 
 #endif // SDK_IBASECLIENTDLL_HPP

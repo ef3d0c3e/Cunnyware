@@ -1,8 +1,9 @@
 #include "Draw.hpp"
+#include "../Hacks/Visuals.hpp"
 
 std::deque<DrawRequest> Draw::drawRequests = {};
 
-void Draw::AddLine(Rect2i bounds, ImColor color, f32 thickness)
+void Draw::AddLine(Rect2 bounds, ImColor color, f32 thickness)
 {
 	DrawRequest req = {};
 	req.type = DrawType::LINE;
@@ -13,7 +14,7 @@ void Draw::AddLine(Rect2i bounds, ImColor color, f32 thickness)
 	drawRequests.push_back(std::move(req));
 }
 
-void Draw::AddRect(Rect2i rect, ImColor color, f32 thickness, f32 rounding, i32 flags)
+void Draw::AddRect(Rect2 rect, ImColor color, f32 thickness, f32 rounding, i32 flags)
 {
 	DrawRequest req = {};
 	req.type = DrawType::RECT;
@@ -26,7 +27,7 @@ void Draw::AddRect(Rect2i rect, ImColor color, f32 thickness, f32 rounding, i32 
 	drawRequests.push_back(std::move(req));
 }
 
-void Draw::AddRectFilled(Rect2i rect, ImColor color, f32 rounding, i32 flags)
+void Draw::AddRectFilled(Rect2 rect, ImColor color, f32 rounding, i32 flags)
 {
 	DrawRequest req = {};
 	req.type = DrawType::RECT_FILLED;
@@ -38,7 +39,7 @@ void Draw::AddRectFilled(Rect2i rect, ImColor color, f32 rounding, i32 flags)
 	drawRequests.push_back(std::move(req));
 }
 
-void Draw::AddCircle(Vec2i center, f32 radius, ImColor color, u32 segments, f32 thickness)
+void Draw::AddCircle(Vec2 center, f32 radius, ImColor color, u32 segments, f32 thickness)
 {
 	DrawRequest req = {};
 	req.type = DrawType::CIRCLE;
@@ -51,7 +52,7 @@ void Draw::AddCircle(Vec2i center, f32 radius, ImColor color, u32 segments, f32 
 	drawRequests.push_back(std::move(req));
 }
 
-void Draw::AddCircleFilled(Vec2i center, f32 radius, ImColor color, u32 segments)
+void Draw::AddCircleFilled(Vec2 center, f32 radius, ImColor color, u32 segments)
 {
 	DrawRequest req = {};
 	req.type = DrawType::CIRCLE_FILLED;
@@ -76,7 +77,7 @@ void Draw::AddCircle3D(Vec3 pos3D, f32 radius, ImColor color, u32 segments, f32 
 	drawRequests.push_back(std::move(req));
 }
 
-void Draw::AddText(Vec2i pos, std::string&& text, ImColor color, TextFlags flags)
+void Draw::AddText(Vec2 pos, std::string&& text, ImColor color, TextFlags flags)
 {
 	DrawRequest req = {};
 	req.type = DrawType::TEXT;
@@ -155,7 +156,6 @@ void Draw::ImCircle3D(Vec3 position, u32 segments, f32 radius, ImColor color, f3
 
 	for (float a = 0; a < (M_PI * 2.0f); a += step)
 	{
-
 		Vec3 start(radius * cosf(a) + position.x,
 					 radius * sinf(a) + position.y,
 					 position.z);
@@ -164,8 +164,8 @@ void Draw::ImCircle3D(Vec3 position, u32 segments, f32 radius, ImColor color, f3
 				   position.z);
 
 		Vec2 start2d, end2d;
-		//if (!ESP::WorldToScreen(start, &start2d) || !ESP::WorldToScreen(end, &end2d))
-			//continue;
+		if (!ESP::WorldToScreen(start, start2d) || !ESP::WorldToScreen(end, end2d))
+			continue;
 
 		Draw::ImLine({start2d, end2d}, color, thickness);
 	}

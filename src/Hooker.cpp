@@ -42,3 +42,44 @@ void Hooker::FindAbsFunctions()
 					"\xF3",
 					"xxxxxxxxxxxxxxxxxx?x????x");
 }
+
+GetSequenceActivityFn GetSeqActivity;
+
+void Hooker::FindSequenceActivity()
+{
+	// C_BaseAnimating::GetSequenceActivity()
+	// 83 FE FF                cmp     esi, 0FFFFFFFFh
+	// 74 6B                   jz      short loc_7A1F40
+	// 55                      push    rbp
+	// 48 89 E5                mov     rbp, rsp
+	// 53                      push    rbx
+	// 48 89 FB                mov     rbx, rdi
+	// 48 83 EC 18             sub     rsp, 18h
+	// 48 8B BF D0 2F 00 00    mov     rdi, [rdi+2FD0h]
+	// 48 85 FF                test    rdi, rdi
+	// 74 13                   jz      short loc_7A1F00
+	// loc_7A1EED:             ; CODE XREF: GetSequenceActivity+5F↓j
+	// 48 83 3F 00             cmp     qword ptr [rdi], 0
+	// 74 3E                   jz      short loc_7A1F31
+	// 48 83 C4 18             add     rsp, 18h
+	// 31 D2                   xor     edx, edx
+	// 83 FE FF 74 ?? 55 48 89 E5 53 48 89 FB 48 83 EC ?? 48 8B BF ?? ?? ?? ?? 48 85 FF 74 ?? 48 83 3F 00 74 ?? 48 83 C4 ?? 31
+	uintptr_t funcAddr = FindPatternInModule("/client_client.so",
+			u8"\x83\xFE\xFF"
+			"\x74\x00"
+			"\x55"
+			"\x48\x89\xE5"
+			"\x53"
+			"\x48\x89\xFB"
+			"\x48\x83\xEC\x00"
+			"\x48\x8B\xBF\x00\x00\x00\x00"
+			"\x48\x85\xFF"
+			"\x74\x00"
+			"\x48\x83\x3F\x00"
+			"\x74\x00"
+			"\x48\x83\xC4\x00"
+			"\x31",
+			"xxxx?xxxxxxxxxxx?xxx????xxxx?xxxxx?xxx?x");
+
+	GetSeqActivity = reinterpret_cast<GetSequenceActivityFn>(funcAddr);
+}

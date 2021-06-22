@@ -70,14 +70,14 @@ static void ESPLeft()
 			UI::Section("Weapons");
 			static std::vector<std::tuple<const char*, const char*, bool&>> weapons
 			{
-				{"Primary", NULL, Settings::ESP::Enemies::primaryWeapon},
-				{"Secondary", NULL, Settings::ESP::Enemies::secondaryWeapon},
+				{"Current", NULL, Settings::ESP::Enemies::currentWeapon},
+				{"Other", NULL, Settings::ESP::Enemies::otherWeapon},
 				{"Grenades", NULL, Settings::ESP::Enemies::grenades},
 			};
 			static std::string format;
 			UI::CheckboxCombo(" ##WEAPONS", weapons, format, " + ");
-			UI::ColorEdit(std::make_pair("Primary Weapon Color"s, &Settings::ESP::Enemies::primaryWeaponColor),
-				std::make_pair("Secondary Weapon Color"s, &Settings::ESP::Enemies::secondaryWeaponColor),
+			UI::ColorEdit(std::make_pair("Current Weapon Color"s, &Settings::ESP::Enemies::currentWeaponColor),
+				std::make_pair("Other Weapon Color"s, &Settings::ESP::Enemies::otherWeaponColor),
 				std::make_pair("Grenade Color"s, &Settings::ESP::Enemies::grenadesColor));
 
 			break;

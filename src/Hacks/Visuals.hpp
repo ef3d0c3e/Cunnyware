@@ -38,10 +38,10 @@ namespace Enemies
 	extern bool ammoBar;
 	extern ImVec4 ammoBarColor;
 
-	extern bool primaryWeapon;
-	extern ImVec4 primaryWeaponColor;
-	extern bool secondaryWeapon;
-	extern ImVec4 secondaryWeaponColor;
+	extern bool currentWeapon;
+	extern ImVec4 currentWeaponColor;
+	extern bool otherWeapon;
+	extern ImVec4 otherWeaponColor;
 	extern bool grenades;
 	extern ImVec4 grenadesColor;
 

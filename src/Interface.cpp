@@ -127,6 +127,7 @@ IVModelRender* modelRender = nullptr;
 IVPanel* panel = nullptr;
 IEngineSound* sound = nullptr;
 IClientEntityList* entityList = nullptr;
+IVDebugOverlay* debugOverlay = nullptr;
 
 void Interface::FindInterfaces()
 {
@@ -141,6 +142,7 @@ void Interface::FindInterfaces()
 	modelRender = GetInterface<IVModelRender>("./bin/linux64/engine_client.so", "VEngineModel");
 	panel = GetInterface<IVPanel>("./bin/linux64/vgui2_client.so", "VGUI_Panel");
 	entityList = GetInterface<IClientEntityList>("./csgo/bin/linux64/client_client.so", "VClientEntityList");
+	debugOverlay = GetInterface<IVDebugOverlay>("./bin/linux64/engine_client.so", "VDebugOverlay");
 
 	// launcherMgr
 	{
@@ -165,6 +167,7 @@ void Interface::FindInterfaces()
 	Hooker::FindPlayerAnimStateOffset();
 	Hooker::FindPlayerAnimOverlayOffset();
 	Hooker::FindAbsFunctions();
+	Hooker::FindSequenceActivity();
 }
 
 VMT* inputInternalVMT = nullptr;

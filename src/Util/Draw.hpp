@@ -24,7 +24,7 @@ struct DrawRequest
 	DrawRequest() {}
 
 	DrawType type;
-	Rect2i rect;
+	Rect2 rect;
 	u32 segments;
 	f32 radius;
 	f32 thickness;
@@ -38,13 +38,13 @@ namespace Draw
 {
 extern std::deque<DrawRequest> drawRequests;
 
-void AddLine(Rect2i bounds, ImColor color, f32 thickness = 1.0f);
-void AddRect(Rect2i rect, ImColor color, f32 thickness = 1.f, f32 rounding = 0.f, i32 flags = 0);
-void AddRectFilled(Rect2i rect, ImColor color, f32 rounding = 0.f, i32 flags = 0);
-void AddCircle(Vec2i center, f32 radius, ImColor color, u32 segments, f32 thickness);
-void AddCircleFilled(Vec2i center, f32 radius, ImColor color, u32 segments);
+void AddLine(Rect2 bounds, ImColor color, f32 thickness = 1.0f);
+void AddRect(Rect2 rect, ImColor color, f32 thickness = 1.f, f32 rounding = 0.f, i32 flags = 0);
+void AddRectFilled(Rect2 rect, ImColor color, f32 rounding = 0.f, i32 flags = 0);
+void AddCircle(Vec2 center, f32 radius, ImColor color, u32 segments, f32 thickness);
+void AddCircleFilled(Vec2 center, f32 radius, ImColor color, u32 segments);
 void AddCircle3D(Vec3 pos, f32 radius, ImColor color, u32 segments, f32 thickness = 1.0f);
-void AddText(Vec2i pos, std::string&& text, ImColor color, TextFlags flags);
+void AddText(Vec2 pos, std::string&& text, ImColor color, TextFlags flags);
 
 
 void ImText(Vec2 pos, ImColor color, const std::string& text, TextFlags flags, f32 wrap_width, const Vec4* cpu_fine_clip_rect);

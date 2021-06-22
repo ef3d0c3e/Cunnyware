@@ -22,6 +22,7 @@ extern IVModelRender* modelRender;
 extern IVPanel* panel;
 extern IEngineSound* sound;
 extern IClientEntityList* entityList;
+extern IVDebugOverlay* debugOverlay;
 
 #include "Util/VMT.hpp"
 extern VMT* inputInternalVMT;
