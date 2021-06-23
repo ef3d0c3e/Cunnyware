@@ -12,6 +12,7 @@
 #include <fmt/format.h>
 #include "Cenum.hpp"
 #include "Defs.hpp"
+#include "Math.hpp"
 #include "Redir.hpp"
 #include "VTableCounter.hpp"
 

@@ -689,7 +689,22 @@ public:
 		Length() const noexcept
 	{
 		T x = T();
-		vector_foreach_do(x += operator[](i))
+		vector_foreach_do(x += operator[](i)*operator[](i))
+
+		if constexpr (std::is_same_v<T, R>)
+			return std::sqrt(x);
+		else
+			return std::sqrt(static_cast<R>(x));
+	}
+
+	template <typename R = T>
+	/** @cond */ __vector_inline /** @endcond */
+		R
+		Length2D() const noexcept
+	{
+		static_assert(N == 2 || N == 3);
+		T x;
+		vector_foreach_do_v(x += operator[](i)*operator[](i), true, 2);
 
 		if constexpr (std::is_same_v<T, R>)
 			return std::sqrt(x);

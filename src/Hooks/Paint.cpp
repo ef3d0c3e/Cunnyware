@@ -37,12 +37,7 @@ void Hooks::PaintImGui()
 
 	for (const DrawRequest& req : Draw::drawRequests)
 	{
-		Rect2 rect
-		{
-			.x = req.rect.x,// / engineSize * imSize,
-			.y = req.rect.y,// / engineSize * imSize,
-		};
-
+		Rect2 rect{req.rect.x.as<f32>(), req.rect.y.as<f32>()};
 		switch (req.type)
 		{
 			case DrawType::LINE:

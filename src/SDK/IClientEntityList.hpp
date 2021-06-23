@@ -30,7 +30,7 @@ public:
 	// NOTE: This function is only a convenience wrapper.
 	// It returns GetClientNetworkable( entnum )->GetIClientEntity().
 	virtual C_BaseEntity* GetClientEntity(i32 entnum) = 0;
-	virtual IClientEntity* GetClientEntityFromHandle(CBaseHandle hEnt) = 0;
+	virtual IClientEntity* GetClientEntityFromHandle(/*CBaseHandle*/ void* hEnt) = 0;
 
 	// Returns number of entities currently in use
 	virtual int NumberOfEntities(bool includeNonNetworkable) = 0;

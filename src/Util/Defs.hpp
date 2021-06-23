@@ -16,8 +16,35 @@ typedef std::int64_t i64;
 typedef float f32;
 typedef double f64;
 
+template <class T, std::size_t N>
+struct VecAlignedStorage;
+
+template <class T>
+struct __attribute__((aligned(16))) VecAlignedStorage<T, 3>
+{
+	T x, y, z;
+
+	const f32& operator[](std::size_t i) const noexcept
+	{ return *(reinterpret_cast<const f32*>(this) + i); }
+	f32& operator[](std::size_t i) noexcept
+	{ return *(reinterpret_cast<f32*>(this) + i); }
+};
+
+template <class T>
+struct __attribute__((aligned(16))) VecAlignedStorage<T, 4>
+{
+	T x, y, z, w;
+
+	const f32& operator[](std::size_t i) const noexcept
+	{ return *(reinterpret_cast<const f32*>(this) + i); }
+	f32& operator[](std::size_t i) noexcept
+	{ return *(reinterpret_cast<f32*>(this) + i); }
+};
+
 typedef Vector<f32, 4> Vec4;
+//typedef Vector<f32, 4, VecAlignedStorage> Vec4a;
 typedef Vector<f32, 3> Vec3;
+//typedef Vector<f32, 3, VecAlignedStorage> Vec3a;
 typedef Vector<f32, 2> Vec2;
 typedef Vector<i32, 3> Vec3i;
 typedef Vector<i32, 2> Vec2i;

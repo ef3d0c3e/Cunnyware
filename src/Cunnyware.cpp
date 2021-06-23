@@ -35,8 +35,8 @@ void Start()
 
 		cvar->ConsoleColorPrintf(ColorRGBA(255, 255, 255, 255), "Cunnyware has been successfully loaded!\n");
 
-		//auto idx = VMTIndex<IClientEntity>(&IClientEntity::GetAllClasses);
-		//cvar->ConsoleColorPrintf(ColorRGBA(255, 255, 255, 255), "index =  %d\n", idx);
+		auto idx = VMTIndex<IClientRenderable>(&IClientRenderable::SetupBones);
+		cvar->ConsoleColorPrintf(ColorRGBA(255, 255, 255, 255), "index =  %d\n", idx);
 	}
 	catch (Exception& e)
 	{

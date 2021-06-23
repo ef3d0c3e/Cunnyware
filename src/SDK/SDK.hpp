@@ -16,5 +16,7 @@
 #include "IEngineSound.hpp"
 #include "IClientEntityList.hpp"
 #include "IVDebugOverlay.hpp"
+#include "IGameTypes.hpp"
+#include "IEngineTrace.hpp"
 
 #endif // SDK_HPP

@@ -7,6 +7,7 @@
 #include "../SDK/C_BasePlayer.hpp"
 #include "../SDK/Recv.hpp"
 #include "../SDK/ICollideable.hpp"
+#include "Util.hpp"
 
 // {{{ Configuration
 // Enemies
@@ -54,6 +55,7 @@ EXPORT(ImVec4, Settings::ESP::Enemies::pingColor) = ImVec4(.17f, .76f, .21f, 1.f
 // }}}
 
 static Mat4x4 vMatrix;
+static Vec2 screenResFactor;
 bool ESP::WorldToScreen(const Vec3& origin, Vec2& screen)
 {
 	f32 w = vMatrix[3][0] * origin.x
@@ -61,7 +63,7 @@ bool ESP::WorldToScreen(const Vec3& origin, Vec2& screen)
 		  + vMatrix[3][2] * origin.z
 		  + vMatrix[3][3];
 
-	if ( w < 0.01f ) // Is Not in front of our player
+	if ( w < 0.001f ) // Is Not in front of our player
 		return false;
 
 	f32 width = (float)Paint::engineWidth;
@@ -83,8 +85,7 @@ bool ESP::WorldToScreen(const Vec3& origin, Vec2& screen)
 						  vMatrix[1][1] * origin.y +
 						  vMatrix[1][2] * origin.z +
 						  vMatrix[1][3]) * inverseW) * height + 0.5f);
-	 screen.x = screen.x / Paint::engineWidth * Paint::windowWidth;
-	 screen.y = screen.y / Paint::engineHeight * Paint::windowHeight;
+	screen *= screenResFactor;
 
 	return true;
 }
@@ -92,7 +93,7 @@ bool ESP::WorldToScreen(const Vec3& origin, Vec2& screen)
 bool GetBox(C_BaseEntity* ent, Rect2& box)
 {
 	// Variables
-	Vec2 flb, brt, blb, frt, frb, brb, blt, flt; // think of these as Front-Left-Bottom/Front-Left-Top... Etc.
+	Vec3 flb, brt, blb, frt, frb, brb, blt, flt; // think of these as Front-Left-Bottom/Front-Left-Top... Etc.
 	f32 left, top, right, bottom;
 
 	// Get the locations
@@ -112,21 +113,16 @@ bool GetBox(C_BaseEntity* ent, Rect2& box)
 	};
 
 	// Get screen positions
-	bool v = ESP::WorldToScreen(points[3], flb);
-	v |= ESP::WorldToScreen(points[5], brt);
-	v |= ESP::WorldToScreen(points[0], blb);
-	v |= ESP::WorldToScreen(points[4], frt);
-	v |= ESP::WorldToScreen(points[2], frb);
-	v |= ESP::WorldToScreen(points[1], brb);
-	v |= ESP::WorldToScreen(points[6], blt);
-	v |= ESP::WorldToScreen(points[7], flt);
-	if (!v)
+	if (debugOverlay->ScreenPosition(points[3], flb) || debugOverlay->ScreenPosition(points[5], brt) ||
+		debugOverlay->ScreenPosition(points[0], blb) || debugOverlay->ScreenPosition(points[4], frt) ||
+		debugOverlay->ScreenPosition(points[2], frb) || debugOverlay->ScreenPosition(points[1], brb) ||
+		debugOverlay->ScreenPosition(points[6], blt) || debugOverlay->ScreenPosition(points[7], flt))
 		return false;
 
 	// Put them in an array (maybe start them off in one later for speed?)
-	std::array<Vec2, 8> arr{flb, brt, blb, frt, frb, brb, blt, flt};
+	std::array<Vec3, 8> arr{flb, brt, blb, frt, frb, brb, blt, flt};
 
-	// Init this shit
+	// Init
 	left = flb.x;
 	top = flb.y;
 	right = flb.x;
@@ -155,9 +151,24 @@ void DrawBox(Rect2 box, C_BaseEntity* ent, ImColor color, Settings::ESP::BoxType
 {
 	if (type == Settings::ESP::BoxType::BOX_2D)
 	{
-		Draw::AddRect(Rect2(Vec2{(i32)box.x.x, (i32)box.x.y}, box.x+Vec2{(i32)box.y.x, (i32)box.y.y}), ImColor(0.f, 0.f, 0.f, 0.5f), 3.f, 2.f, ImDrawCornerFlags_All);
-		Draw::AddRect(Rect2(Vec2{(i32)box.x.x, (i32)box.x.y}, box.x+Vec2{(i32)box.y.x, (i32)box.y.y}), color, 1.f, 2.f, ImDrawCornerFlags_All);
-		//Draw::AddRect(Rect2(box.x+Vec2(1,1), box.x+box.y-Vec2(1,1)), ImColor(1.f, 0.f, 0.f, 1.f), 1.f, 2.f, ImDrawCornerFlags_All);
+		Draw::AddRect(
+			Rect2i(
+				Vec2i{(i32)box.x.x, (i32)box.x.y},
+				Vec2i{(i32)(box.y.x+box.x.x), (i32)(box.y.y+box.x.y)}
+			),
+			ImColor(0.f, 0.f, 0.f, 0.5f*color.Value.w),
+			3.f,
+			2.f,
+			ImDrawCornerFlags_All);
+		Draw::AddRect(
+			Rect2i(
+				Vec2i{(i32)box.x.x, (i32)box.x.y},
+				Vec2i{(i32)(box.y.x+box.x.x), (i32)(box.y.y+box.x.y)}
+			),
+			color,
+			1.f,
+			2.f,
+			ImDrawCornerFlags_All);
 	}
 	else if (type == Settings::ESP::BoxType::BOX_3D)
 	{
@@ -182,13 +193,26 @@ void DrawBox(Rect2 box, C_BaseEntity* ent, ImColor color, Settings::ESP::BoxType
 			std::array<i32, 2>{0, 4}, std::array<i32, 2>{1, 5}, std::array<i32, 2>{2, 6}, std::array<i32, 2>{3, 7}
 		};
 
-		for (const auto edge : edges)
+
+		for (const auto& edge : edges)
 		{
-			Vec2 p1, p2;
-			if (ESP::WorldToScreen(points[edge[0]], p1) ||
-				ESP::WorldToScreen(points[edge[1]], p2))
+			Vec3 p1, p2;
+			if (debugOverlay->ScreenPosition(points[edge[0]], p1) ||
+				debugOverlay->ScreenPosition(points[edge[1]], p2))
 				return;
-			Draw::AddLine(Rect2(p1, p2), color);
+			Draw::AddLine(
+				Rect2i(
+					Vec2i{(i32)p1.x, (i32)p1.y},
+					Vec2i{(i32)p2.x, (i32)p2.y}
+				),
+				ImColor(0.f, 0.f, 0.f, 0.5f*color.Value.w),
+				3.f);
+			Draw::AddLine(
+				Rect2i(
+					Vec2i{(i32)p1.x, (i32)p1.y},
+					Vec2i{(i32)p2.x, (i32)p2.y}
+				),
+				color);
 		}
 	}
 }
@@ -198,20 +222,21 @@ void DrawEnemy(C_BasePlayer* p)
 	PlayerInfo info;
 	engine->GetPlayerInfo(p->GetIndex(), &info);
 
-
 	Rect2 box;
-	Vec2 v;
-	/*
-	ESP::WorldToScreen(p->GetVecOrigin()+p->GetCollideable()->OBBMaxs(), v);
-	box.x = v.as<i32>();
-	ESP::WorldToScreen(p->GetVecOrigin()+p->GetCollideable()->OBBMins(), v);
-	box.y = v.as<i32>();
-	*/
 	if (!GetBox(p, box))
 		return;
 
-	DrawBox(box, p, Settings::ESP::Enemies::boxColorVisible, Settings::ESP::Enemies::box);
-	
+	bool visible = Util::IsVisible(p, Bones::HEAD, 180.f, false);
+
+	if (visible)
+		DrawBox(box, p, Settings::ESP::Enemies::boxColorVisible, Settings::ESP::Enemies::box);
+	else
+		DrawBox(box, p, Settings::ESP::Enemies::boxColorInvisible, Settings::ESP::Enemies::box);
+
+	Vec2 pos;
+	if (ESP::WorldToScreen(p->GetBonePosition(Bones::HEAD), pos))
+	{}
+	Draw::AddText(pos.as<i32>(), "TTT"s, ImColor(0.f, 1.f, 0.f, 1.f), 0);
 
 	/*
 	Draw::AddRect({box.x, box.x+Vec2i(10,10)}, ImColor(0.f, 1.0f, 1.f, 1.f));
@@ -263,6 +288,7 @@ void ESP::Paint()
 	if(!engine->IsInGame())
 		return;
 	vMatrix = engine->WorldToScreenMatrix();
+	screenResFactor = Vec2(Paint::engineWidth * Paint::windowWidth, Paint::engineHeight * Paint::windowHeight);
 
 	if (!Settings::Visuals::enabled)
 		return;

@@ -23,6 +23,8 @@ extern IVPanel* panel;
 extern IEngineSound* sound;
 extern IClientEntityList* entityList;
 extern IVDebugOverlay* debugOverlay;
+extern IGameTypes* gameTypes;
+extern IEngineTrace* trace;
 
 #include "Util/VMT.hpp"
 extern VMT* inputInternalVMT;

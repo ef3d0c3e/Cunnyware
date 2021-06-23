@@ -128,6 +128,8 @@ IVPanel* panel = nullptr;
 IEngineSound* sound = nullptr;
 IClientEntityList* entityList = nullptr;
 IVDebugOverlay* debugOverlay = nullptr;
+IGameTypes* gameTypes = nullptr;
+IEngineTrace* trace = nullptr;
 
 void Interface::FindInterfaces()
 {
@@ -143,6 +145,8 @@ void Interface::FindInterfaces()
 	panel = GetInterface<IVPanel>("./bin/linux64/vgui2_client.so", "VGUI_Panel");
 	entityList = GetInterface<IClientEntityList>("./csgo/bin/linux64/client_client.so", "VClientEntityList");
 	debugOverlay = GetInterface<IVDebugOverlay>("./bin/linux64/engine_client.so", "VDebugOverlay");
+	gameTypes = GetInterface<IGameTypes>("./csgo/bin/linux64/matchmaking_client.so", "VENGINE_GAMETYPES_VERSION002", true);
+	trace = GetInterface<IEngineTrace>("./bin/linux64/engine_client.so", "EngineTraceClient");
 
 	// launcherMgr
 	{
