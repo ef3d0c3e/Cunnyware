@@ -54,7 +54,7 @@ QAngle Math::CalcAngle(const Vec3& src, const Vec3& dst)
 
 	Math::VectorAngles(delta, angles);
 
-	delta.Normalize();
+	delta /= delta.Length();
 
 	return angles;
 }

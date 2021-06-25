@@ -9,6 +9,8 @@ bool Util::IsDangerZone()
 
 bool Util::IsVisible(C_BasePlayer* player, i32 bone, f32 fov, bool smoke_check)
 {
+	return false;
+	/*
 	C_BasePlayer* localplayer = (C_BasePlayer*) entityList->GetClientEntity(engine->GetLocalPlayer());
 	if (!localplayer)
 		return true;
@@ -46,6 +48,7 @@ bool Util::IsVisible(C_BasePlayer* player, i32 bone, f32 fov, bool smoke_check)
 	//	return false;
 
 	return tr.entityHit == player;
+	*/
 }
 
 bool Util::IsSpotVisible(C_BasePlayer* player, Vec3 spot, f32 fov, bool smoke_check)

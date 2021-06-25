@@ -1,9 +1,16 @@
 #ifndef UTILS_DEFS_HPP
 #define UTILS_DEFS_HPP
 
+#define VECTOR_USE_STD
 #include "Vector.hpp"
 #include "Cenum.hpp"
 #include "CStructs.hpp"
+#include <array>
+#include <cstdint>
+#include <functional>
+#include <string>
+
+using MPV = MPVector<std::size_t>;
 
 typedef std::uint8_t u8;
 typedef std::uint16_t u16;
@@ -17,50 +24,366 @@ typedef float f32;
 typedef double f64;
 
 template <class T, std::size_t N>
-struct VecAlignedStorage;
+struct __Vec;
+template <class T, std::size_t N>
+struct __VecA;
+template <class T, std::size_t N>
+struct __QAngle;
 
 template <class T>
-struct __attribute__((aligned(16))) VecAlignedStorage<T, 3>
+struct __Vec<T, 2>
+{
+	T x, y;
+
+	template <std::size_t i>
+	inline constexpr const T& Get() const noexcept
+	{
+		if constexpr (i == 0)
+			return x;
+		else if constexpr (i == 1)
+			return y;
+	}
+	template <std::size_t i>
+	inline constexpr T& Get() noexcept
+	{
+		if constexpr (i == 0)
+			return x;
+		else if constexpr (i == 1)
+			return y;
+	}
+
+	inline constexpr const T& operator[](std::size_t i) const noexcept
+	{
+		switch (i)
+		{
+			case 0:
+				return x;
+			case 1:
+				return y;
+		}
+		__builtin_unreachable();
+	}
+	inline constexpr T& operator[](std::size_t i) noexcept
+	{
+		switch (i)
+		{
+			case 0:
+				return x;
+			case 1:
+				return y;
+		}
+		__builtin_unreachable();
+	}
+};
+
+template <class T>
+struct __Vec<T, 3>
 {
 	T x, y, z;
 
-	const f32& operator[](std::size_t i) const noexcept
-	{ return *(reinterpret_cast<const f32*>(this) + i); }
-	f32& operator[](std::size_t i) noexcept
-	{ return *(reinterpret_cast<f32*>(this) + i); }
+	template <std::size_t i>
+	inline constexpr const T& Get() const noexcept
+	{
+		if constexpr (i == 0)
+			return x;
+		else if constexpr (i == 1)
+			return y;
+		else if constexpr (i == 2)
+			return z;
+	}
+	template <std::size_t i>
+	inline constexpr T& Get() noexcept
+	{
+		if constexpr (i == 0)
+			return x;
+		else if constexpr (i == 1)
+			return y;
+		else if constexpr (i == 2)
+			return z;
+	}
+
+	inline constexpr const T& operator[](std::size_t i) const noexcept
+	{
+		switch (i)
+		{
+			case 0:
+				return x;
+			case 1:
+				return y;
+			case 2:
+				return z;
+		}
+		__builtin_unreachable();
+	}
+	inline constexpr T& operator[](std::size_t i) noexcept
+	{
+		switch (i)
+		{
+			case 0:
+				return x;
+			case 1:
+				return y;
+			case 2:
+				return z;
+		}
+		__builtin_unreachable();
+	}
 };
 
 template <class T>
-struct __attribute__((aligned(16))) VecAlignedStorage<T, 4>
+struct __Vec<T, 4>
 {
 	T x, y, z, w;
 
-	const f32& operator[](std::size_t i) const noexcept
-	{ return *(reinterpret_cast<const f32*>(this) + i); }
-	f32& operator[](std::size_t i) noexcept
-	{ return *(reinterpret_cast<f32*>(this) + i); }
+	template <std::size_t i>
+	inline constexpr const T& Get() const noexcept
+	{
+		if constexpr (i == 0)
+			return x;
+		else if constexpr (i == 1)
+			return y;
+		else if constexpr (i == 2)
+			return z;
+		else if constexpr (i == 3)
+			return w;
+	}
+	template <std::size_t i>
+	inline constexpr T& Get() noexcept
+	{
+		if constexpr (i == 0)
+			return x;
+		else if constexpr (i == 1)
+			return y;
+		else if constexpr (i == 2)
+			return z;
+		else if constexpr (i == 3)
+			return w;
+	}
+
+	inline constexpr const T& operator[](std::size_t i) const noexcept
+	{
+		switch (i)
+		{
+			case 0:
+				return x;
+			case 1:
+				return y;
+			case 2:
+				return z;
+			case 3:
+				return w;
+		}
+		__builtin_unreachable();
+	}
+	inline constexpr T& operator[](std::size_t i) noexcept
+	{
+		switch (i)
+		{
+			case 0:
+				return x;
+			case 1:
+				return y;
+			case 2:
+				return z;
+			case 3:
+				return w;
+		}
+		__builtin_unreachable();
+	}
 };
 
-typedef Vector<f32, 4> Vec4;
-//typedef Vector<f32, 4, VecAlignedStorage> Vec4a;
-typedef Vector<f32, 3> Vec3;
-//typedef Vector<f32, 3, VecAlignedStorage> Vec3a;
-typedef Vector<f32, 2> Vec2;
-typedef Vector<i32, 3> Vec3i;
-typedef Vector<i32, 2> Vec2i;
+template <class T>
+struct __attribute__((aligned(16))) __VecA<T, 3>
+{
+	T x, y, z;
+
+	template <std::size_t i>
+	inline constexpr const T& Get() const noexcept
+	{
+		if constexpr (i == 0)
+			return x;
+		else if constexpr (i == 1)
+			return y;
+		else if constexpr (i == 2)
+			return z;
+	}
+	template <std::size_t i>
+	inline constexpr T& Get() noexcept
+	{
+		if constexpr (i == 0)
+			return x;
+		else if constexpr (i == 1)
+			return y;
+		else if constexpr (i == 2)
+			return z;
+	}
+
+	inline constexpr const T& operator[](std::size_t i) const noexcept
+	{
+		switch (i)
+		{
+			case 0:
+				return x;
+			case 1:
+				return y;
+			case 2:
+				return z;
+		}
+		__builtin_unreachable();
+	}
+	inline constexpr T& operator[](std::size_t i) noexcept
+	{
+		switch (i)
+		{
+			case 0:
+				return x;
+			case 1:
+				return y;
+			case 2:
+				return z;
+		}
+		__builtin_unreachable();
+	}
+};
+
+template <class T>
+struct __attribute__((aligned(16))) __VecA<T, 4>
+{
+	T x, y, z, w;
+
+	template <std::size_t i>
+	inline constexpr const T& Get() const noexcept
+	{
+		if constexpr (i == 0)
+			return x;
+		else if constexpr (i == 1)
+			return y;
+		else if constexpr (i == 2)
+			return z;
+		else if constexpr (i == 3)
+			return w;
+	}
+	template <std::size_t i>
+	inline constexpr T& Get() noexcept
+	{
+		if constexpr (i == 0)
+			return x;
+		else if constexpr (i == 1)
+			return y;
+		else if constexpr (i == 2)
+			return z;
+		else if constexpr (i == 3)
+			return w;
+	}
+
+	inline constexpr const T& operator[](std::size_t i) const noexcept
+	{
+		switch (i)
+		{
+			case 0:
+				return x;
+			case 1:
+				return y;
+			case 2:
+				return z;
+			case 3:
+				return w;
+		}
+		__builtin_unreachable();
+	}
+	inline constexpr T& operator[](std::size_t i) noexcept
+	{
+		switch (i)
+		{
+			case 0:
+				return x;
+			case 1:
+				return y;
+			case 2:
+				return z;
+			case 3:
+				return w;
+		}
+		__builtin_unreachable();
+	}
+};
+
+template <class T>
+struct __QAngle<T, 3>
+{
+	T pitch, yaw, roll;
+
+	template <std::size_t i>
+	inline constexpr const T& Get() const noexcept
+	{
+		if constexpr (i == 0)
+			return pitch;
+		else if constexpr (i == 1)
+			return yaw;
+		else if constexpr (i == 2)
+			return roll;
+	}
+	template <std::size_t i>
+	inline constexpr T& Get() noexcept
+	{
+		if constexpr (i == 0)
+			return pitch;
+		else if constexpr (i == 1)
+			return yaw;
+		else if constexpr (i == 2)
+			return roll;
+	}
+
+	inline constexpr const T& operator[](std::size_t i) const noexcept
+	{
+		switch (i)
+		{
+			case 0:
+				return pitch;
+			case 1:
+				return yaw;
+			case 2:
+				return roll;
+		}
+		__builtin_unreachable();
+	}
+	inline constexpr T& operator[](std::size_t i) noexcept
+	{
+		switch (i)
+		{
+			case 0:
+				return pitch;
+			case 1:
+				return yaw;
+			case 2:
+				return roll;
+		}
+		__builtin_unreachable();
+	}
+};
+
+typedef MPV::Vector<f32, 4, __Vec> Vec4;
+typedef MPV::Vector<f32, 3, __Vec> Vec3;
+typedef MPV::Vector<f32, 2, __Vec> Vec2;
+typedef MPV::Vector<i32, 4, __Vec> Vec4i;
+typedef MPV::Vector<i32, 3, __Vec> Vec3i;
+typedef MPV::Vector<i32, 2, __Vec> Vec2i;
+typedef MPV::Vector<f32, 4, __VecA> Vec4a;
+typedef MPV::Vector<f32, 3, __VecA> Vec3a;
+typedef MPV::Vector<u8, 4, __Vec> Vec4b;
 using Quaternion = Vec4;
 
-typedef Vector<Vec4, 4> Mat4x4;
-typedef Vector<Vec3, 3> Mat3x3;
-typedef Vector<Vec3, 4> Mat3x4;
-typedef Vector<Vec3, 4> Mat4x3;
-typedef Vector<Vec2, 2> Mat2x2;
-typedef Vector<Vec2, 3> Mat3x2;
-typedef Vector<Vec2, 4> Mat4x2;
+typedef MPV::Vector<Vec4, 4, __Vec> Mat4x4;
+typedef MPV::Vector<Vec3, 3, __Vec> Mat3x3;
+typedef MPV::Vector<Vec3, 4, __Vec> Mat3x4;
+typedef MPV::Vector<Vec3, 4, __Vec> Mat4x3;
+typedef MPV::Vector<Vec2, 2, __Vec> Mat2x2;
+typedef MPV::Vector<Vec2, 3, __Vec> Mat3x2;
+typedef MPV::Vector<Vec2, 4, __Vec> Mat4x2;
 
-typedef Vector<Vec2i, 2> Rect2i; // Rect_t
-typedef Vector<Vec3i, 2> Rect3i; // Rect3D_t
-typedef Vector<Vec2, 2> Rect2;
+typedef MPV::Vector<Vec2i, 2, __Vec> Rect2i; // Rect_t
+typedef MPV::Vector<Vec3i, 2, __Vec> Rect3i; // Rect3D_t
+typedef MPV::Vector<Vec2, 2, __Vec> Rect2;
 
 struct VRect // vrect_t
 {
@@ -74,21 +397,7 @@ struct non_constructible
 	//~non_constructible() noexcept = delete;
 };
 
-template <class T, std::size_t N>
-struct __QAngle;
-
-template <>
-struct __QAngle<f32, 3>
-{
-	f32 pitch, yaw, roll;
-
-	const f32& operator[](std::size_t i) const noexcept
-	{ return *(reinterpret_cast<const f32*>(this) + i); }
-	f32& operator[](std::size_t i) noexcept
-	{ return *(reinterpret_cast<f32*>(this) + i); }
-};
-
-typedef Vector<f32, 3, __QAngle> QAngle;
+typedef MPV::Vector<f32, 3, __QAngle> QAngle;
 
 
 #endif // UTILS_DEFS_HPP

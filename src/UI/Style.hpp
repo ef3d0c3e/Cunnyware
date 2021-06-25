@@ -4,12 +4,6 @@
 #include "../ImGUI/imgui.h"
 #include "../Util/Defs.hpp"
 
-struct ColorRGBA;
-namespace UI
-{
-	ColorRGBA ToRGBA(ImU32 col);
-}
-
 namespace Settings::Style
 {
 

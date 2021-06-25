@@ -1,13 +1,6 @@
 #include "Style.hpp"
 #include "../SDK/Color.hpp"
 
-ColorRGBA UI::ToRGBA(ImU32 col)
-{
-	const auto v = *reinterpret_cast<const Vector<u8, 4>*>(&col);
-
-	return ColorRGBA(v.x, v.w, v.z, v.y);
-}
-
 namespace Settings::Style
 {
 	// Window

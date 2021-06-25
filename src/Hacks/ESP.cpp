@@ -142,7 +142,7 @@ bool GetBox(C_BaseEntity* ent, Rect2& box)
 	}
 
 	// Width / height
-	box = {{left, top}, {right-left, bottom-top}};
+	box = Rect2{Vec2{left, top}, Vec2{right-left, bottom-top}};
 
 	return true;
 }
@@ -236,7 +236,7 @@ void DrawEnemy(C_BasePlayer* p)
 	Vec2 pos;
 	if (ESP::WorldToScreen(p->GetBonePosition(Bones::HEAD), pos))
 	{}
-	Draw::AddText(pos.as<i32>(), "TTT"s, ImColor(0.f, 1.f, 0.f, 1.f), 0);
+	Draw::AddText(pos.As<i32>(), "TTT"s, ImColor(0.f, 1.f, 0.f, 1.f), 0);
 
 	/*
 	Draw::AddRect({box.x, box.x+Vec2i(10,10)}, ImColor(0.f, 1.0f, 1.f, 1.f));
@@ -278,7 +278,7 @@ void DrawEnemy(C_BasePlayer* p)
 		v &= ESP::WorldToScreen( points[edge[1]], p2 );
 		if (!v)
 			return;
-		Draw::AddLine( Rect2i(Vec2i(p1.x, p1.y).as<i32>(), Vec2(p2.x, p2.y).as<i32>()), ImColor(1.f, 1.f, 0.f, 1.f) );
+		Draw::AddLine( Rect2i(Vec2i(p1.x, p1.y).As<i32>(), Vec2(p2.x, p2.y).As<i32>()), ImColor(1.f, 1.f, 0.f, 1.f) );
 	}
 	*/
 }

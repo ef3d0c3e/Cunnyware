@@ -12,7 +12,7 @@ class Image
 
 	// GL data
 	GLuint m_texture;
-	Vector<int, 2> m_dim;
+	Vec2i m_dim;
 
 public:
 	Image(const unsigned char* image, std::size_t size)
@@ -23,7 +23,7 @@ public:
 	~Image()
 	{ }
 
-	Vector<int, 2> GetSize() const
+	Vec2i GetSize() const
 	{
 		return m_dim;
 	}

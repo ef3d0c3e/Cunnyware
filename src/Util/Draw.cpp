@@ -167,6 +167,6 @@ void Draw::ImCircle3D(Vec3 position, u32 segments, f32 radius, ImColor color, f3
 		if (!ESP::WorldToScreen(start, start2d) || !ESP::WorldToScreen(end, end2d))
 			continue;
 
-		Draw::ImLine({start2d, end2d}, color, thickness);
+		Draw::ImLine(Rect2{start2d, end2d}, color, thickness);
 	}
 }

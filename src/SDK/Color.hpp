@@ -13,18 +13,68 @@ struct __Color_container<T, 4>
 {
 	T r, g, b, a;
 
-	T& operator[](std::size_t i)
-	{ return *(reinterpret_cast<T*>(this) + i); }
+	template <std::size_t i>
+	inline constexpr const T& Get() const noexcept
+	{
+		if constexpr (i == 0)
+			return r;
+		else if constexpr (i == 1)
+			return g;
+		else if constexpr (i == 2)
+			return b;
+		else if constexpr (i == 3)
+			return a;
+	}
+	template <std::size_t i>
+	inline constexpr T& Get() noexcept
+	{
+		if constexpr (i == 0)
+			return r;
+		else if constexpr (i == 1)
+			return g;
+		else if constexpr (i == 2)
+			return b;
+		else if constexpr (i == 3)
+			return a;
+	}
 
-	const T& operator[](std::size_t i) const
-	{ return *(reinterpret_cast<const T*>(this) + i); }
+	inline constexpr const T& operator[](std::size_t i) const noexcept
+	{
+		switch (i)
+		{
+			case 0:
+				return r;
+			case 1:
+				return g;
+			case 2:
+				return b;
+			case 3:
+				return a;
+		}
+		__builtin_unreachable();
+	}
+	inline constexpr T& operator[](std::size_t i) noexcept
+	{
+		switch (i)
+		{
+			case 0:
+				return r;
+			case 1:
+				return g;
+			case 2:
+				return b;
+			case 3:
+				return a;
+		}
+		__builtin_unreachable();
+	}
 };
 
 
 
-struct Color : public Vector<i32, 4, __Color_container>
+struct Color : public MPV::Vector<i32, 4, __Color_container>
 {
-	using base_type = Vector<i32, 4, __Color_container>;
+	using base_type = MPV::Vector<i32, 4, __Color_container>;
 
 	Color() noexcept:
 		base_type(0, 0, 0, 255)
@@ -103,9 +153,9 @@ struct Color : public Vector<i32, 4, __Color_container>
 };
 
 // color32
-struct ColorRGBA : Vector<u8, 4, __Color_container>
+struct ColorRGBA : MPV::Vector<u8, 4, __Color_container>
 {
-	using base_type = Vector<u8, 4, __Color_container>;
+	using base_type = MPV::Vector<u8, 4, __Color_container>;
 	ColorRGBA(u8 _r, u8 _g, u8 _b, u8 _a = 255) noexcept:
 		base_type(_a, _r, _g, _b)
 	{}

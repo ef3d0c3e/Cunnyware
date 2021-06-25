@@ -12,7 +12,7 @@ static bool isDisabled = false;
 // {{{ Misc
 ImU32 Darken(ImU32 col, i32 factor)
 {
-	auto& c = *reinterpret_cast<Vector<u8, 4>*>(&col);
+	auto& c = *reinterpret_cast<Vec4b*>(&col);
 	return (c.x >> factor) |  ((c.y >> factor) << 8) | ((c.z >> factor) << 16) | (c.w << 24);
 }
 
