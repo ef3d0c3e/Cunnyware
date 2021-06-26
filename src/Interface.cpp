@@ -130,6 +130,7 @@ IClientEntityList* entityList = nullptr;
 IVDebugOverlay* debugOverlay = nullptr;
 IGameTypes* gameTypes = nullptr;
 IEngineTrace* trace = nullptr;
+IVModelInfo* modelInfo = nullptr;
 
 void Interface::FindInterfaces()
 {
@@ -147,6 +148,7 @@ void Interface::FindInterfaces()
 	debugOverlay = GetInterface<IVDebugOverlay>("./bin/linux64/engine_client.so", "VDebugOverlay");
 	gameTypes = GetInterface<IGameTypes>("./csgo/bin/linux64/matchmaking_client.so", "VENGINE_GAMETYPES_VERSION002", true);
 	trace = GetInterface<IEngineTrace>("./bin/linux64/engine_client.so", "EngineTraceClient");
+	modelInfo = GetInterface<IVModelInfo>("./bin/linux64/engine_client.so", "VModelInfoClient");
 
 	// launcherMgr
 	{

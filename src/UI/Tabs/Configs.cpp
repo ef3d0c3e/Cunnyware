@@ -1,6 +1,7 @@
 #include "Tabs.hpp"
 #include "../../Config.hpp"
 #include "../../Hacks/Visuals.hpp"
+#include "../../Hooks/Hooks.hpp"
 
 void Main()
 {
@@ -127,13 +128,36 @@ void Logs()
 	EndChild();
 }
 
-void Menu()
+void Graphics()
 {
-	Child("##MENU", 2.5f);
+	Child("##GRAPHICS", 2.5f);
 	UI::Section("Graphics options");
 	UI::Checkbox("Antialiasing", &Settings::Visuals::antialiasing);
 	UI::Desc("Turns on antialiasing for cleaner looking results,\nat the cost of performances");
 	EndChild();
+}
+
+void Font()
+{
+	static std::array<bool, 7> flags{0, 0, 0, 0, 0, 0, 0};
+	const static std::array<std::string, flags.size()> flagsName{
+		"NoHinting"s, "NoAutoHint"s, "ForceAutoHint"s, "LightHinting"s, "MonoHinting"s, "Bold"s, "Oblique"s
+	};
+
+	Child("##FONT", 8.5f);
+	UI::Section("Font options");
+	for (std::size_t i = 0; i < flags.size(); ++i)
+	{
+		SDL2::wantRebuild |= UI::Checkbox(flagsName[i].c_str(), &flags[i]);
+	}
+	EndChild();
+
+	if (SDL2::wantRebuild)
+	{
+		SDL2::fontFlags = 0;
+		for (std::size_t i = 0; i < flags.size(); ++i)
+			SDL2::fontFlags |= flags[i] << i;
+	}
 }
 
 void Tabs::Configs()
@@ -150,9 +174,9 @@ void Tabs::Configs()
 			{
 				{ Logs }
 			}),
-			std::make_pair("Menu"s, (TabContent)
+			std::make_pair("Graphics"s, (TabContent)
 			{
-				{ Menu, []{} }
+				{ Graphics, Font }
 			})
 		)
 	);

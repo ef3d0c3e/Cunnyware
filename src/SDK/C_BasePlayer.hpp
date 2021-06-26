@@ -107,7 +107,7 @@ public:
 	{
 		return (QAngle*)((std::uintptr_t)this + offsets.DT_CSPlayer.m_angEyeAngles[0]);
 	}
-	
+
 	i32 GetMoney()
 	{
 		return *(i32*)((std::uintptr_t)this + offsets.DT_CSPlayer.m_iAccount);

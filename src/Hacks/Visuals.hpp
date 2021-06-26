@@ -80,4 +80,3 @@ namespace ESP
 }
 
 #endif // SDK_VISUALS_HPP
-

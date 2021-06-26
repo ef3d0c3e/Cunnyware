@@ -372,10 +372,11 @@ typedef MPV::Vector<f32, 4, __VecA> Vec4a;
 typedef MPV::Vector<f32, 3, __VecA> Vec3a;
 typedef MPV::Vector<u8, 4, __Vec> Vec4b;
 using Quaternion = Vec4;
+using RadianEuler = Vec3;
 
 typedef MPV::Vector<Vec4, 4, __Vec> Mat4x4;
 typedef MPV::Vector<Vec3, 3, __Vec> Mat3x3;
-typedef MPV::Vector<Vec3, 4, __Vec> Mat3x4;
+typedef MPV::Vector<Vec4, 3, __Vec> Mat3x4;
 typedef MPV::Vector<Vec3, 4, __Vec> Mat4x3;
 typedef MPV::Vector<Vec2, 2, __Vec> Mat2x2;
 typedef MPV::Vector<Vec2, 3, __Vec> Mat3x2;

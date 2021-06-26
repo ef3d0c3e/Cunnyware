@@ -98,6 +98,7 @@ namespace UI
 	void NotificationMessage(const std::string& message, struct NotificationType type, f32 ratio);
 	void Logs(const struct Messages& messages);
 	i32 PieMenu(const ImVec2& center, const char* popup_id, const std::vector<std::string>& items, i32* p_selected);
+	Vec2 GetTextSize(const std::string& text, ImFont* font, f32 size);
 }
 
 #endif // UI_WIDGETS_HPP

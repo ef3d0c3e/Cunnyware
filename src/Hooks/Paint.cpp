@@ -1,5 +1,6 @@
 #include "../Hacks/Visuals.hpp"
 #include "../Util/Draw.hpp"
+#include "../UI/UI.hpp"
 #include "Hooks.hpp"
 #include <mutex>
 
@@ -17,8 +18,16 @@ void Hooks::Paint(void* thisptr, PaintMode mode)
 
 	engine->GetScreenSize(Paint::engineHeight, Paint::engineWidth);
 
+
 	if (mode & PaintMode::UIPANELS)
 	{
+		static bool first = true;
+		if (first)
+		{
+			first = false;
+			return;
+		}
+
 		u64 prevRecords = Draw::drawRequests.size();
 
 		ESP::Paint();
@@ -34,6 +43,8 @@ void Hooks::PaintImGui()
 
 	const Vec2 engineSize(Paint::engineWidth, Paint::engineHeight);
 	const Vec2 imSize(Paint::windowWidth, Paint::windowHeight);
+
+	ImGui::PushFont(UI::espfont);
 
 	for (const DrawRequest& req : Draw::drawRequests)
 	{
@@ -63,4 +74,6 @@ void Hooks::PaintImGui()
 				break;
 		}
 	}
+
+	ImGui::PopFont();
 }

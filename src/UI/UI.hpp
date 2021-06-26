@@ -16,6 +16,7 @@ namespace UI
 	extern ImFont* plex_regular;
 	extern ImFont* plex_bold;
 	extern ImFont* plex_mono;
+	extern ImFont* espfont;
 
 	////////////////////////////////////////////////
 	/// \brief Set the UI visible or not

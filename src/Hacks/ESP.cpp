@@ -7,7 +7,11 @@
 #include "../SDK/C_BasePlayer.hpp"
 #include "../SDK/Recv.hpp"
 #include "../SDK/ICollideable.hpp"
+#include "../SDK/StudioHdr.hpp"
+#include "../UI/Widgets.hpp"
+#include "../UI/UI.hpp"
 #include "Util.hpp"
+#include <sstream>
 
 // {{{ Configuration
 // Enemies
@@ -23,7 +27,7 @@ EXPORT(f32, Settings::ESP::Enemies::barrelLength) = 128.f;
 EXPORT(ImVec4, Settings::ESP::Enemies::barrelColor) = ImVec4(.40f, .58f, .80f, 1.f);
 EXPORT(bool, Settings::ESP::Enemies::healthBar) = true;
 EXPORT(ImVec4, Settings::ESP::Enemies::healthBarColor) = ImVec4(.27f, .71f, .26f, 1.f);
-EXPORT(bool, Settings::ESP::Enemies::healthBarHealthBasedColor) = true;
+EXPORT(bool, Settings::ESP::Enemies::healthBarHealthBasedColor) = false;
 EXPORT(bool, Settings::ESP::Enemies::ammoBar) = true;
 EXPORT(ImVec4, Settings::ESP::Enemies::ammoBarColor) = ImVec4(.33f, .53f, .81f, 1.f);
 EXPORT(bool, Settings::ESP::Enemies::currentWeapon) = true;
@@ -56,6 +60,7 @@ EXPORT(ImVec4, Settings::ESP::Enemies::pingColor) = ImVec4(.17f, .76f, .21f, 1.f
 
 static Mat4x4 vMatrix;
 static Vec2 screenResFactor;
+
 bool ESP::WorldToScreen(const Vec3& origin, Vec2& screen)
 {
 	f32 w = vMatrix[3][0] * origin.x
@@ -63,7 +68,7 @@ bool ESP::WorldToScreen(const Vec3& origin, Vec2& screen)
 		  + vMatrix[3][2] * origin.z
 		  + vMatrix[3][3];
 
-	if ( w < 0.001f ) // Is Not in front of our player
+	if ( w < 0.01f ) // Is Not in front of our player
 		return false;
 
 	f32 width = (float)Paint::engineWidth;
@@ -217,7 +222,65 @@ void DrawBox(Rect2 box, C_BaseEntity* ent, ImColor color, Settings::ESP::BoxType
 	}
 }
 
-void DrawEnemy(C_BasePlayer* p)
+void DrawSkeleton(C_BasePlayer* player, ImColor color)
+{
+	StudioHdr* studioModel = modelInfo->GetStudioModel(player->GetModel());
+	if (!studioModel)
+		return;
+
+	static std::array<Mat3x4, 128> boneToWorld;
+	if (!player->SetupBones(boneToWorld.data(), 128, BoneMask::HITBOX, 0))
+		return;
+
+	for (i32 i = 0; i < studioModel->numBones; i++)
+	{
+		MStudioBone* bone = studioModel->Bone(i);
+		if (!bone || !(bone->flags & BoneMask::HITBOX) || bone->parent == -1)
+			continue;
+
+		Vec3 bonePos1;
+		if (debugOverlay->ScreenPosition(Vec3{boneToWorld[i][0][3], boneToWorld[i][1][3], boneToWorld[i][2][3]}, bonePos1))
+			continue;
+
+		Vec3 bonePos2;
+		if (debugOverlay->ScreenPosition(Vec3{boneToWorld[bone->parent][0][3], boneToWorld[bone->parent][1][3], boneToWorld[bone->parent][2][3]}, bonePos2))
+			continue;
+
+		Draw::AddLine(Rect2i{Vec2i{bonePos1.x, bonePos1.y}, Vec2i{bonePos2.x, bonePos2.y}}, ImColor(0.f, 0.f, 0.f, 0.5f*color.Value.w), 3.f);
+		Draw::AddLine(Rect2i{Vec2i{bonePos1.x, bonePos1.y}, Vec2i{bonePos2.x, bonePos2.y}}, color, 1.f);
+	}
+}
+
+void DrawBarrel(C_BasePlayer* p, ImColor color, f32 length)
+{
+	Vec3 start;
+	const Vec3 head = p->GetBonePosition(Bones::HEAD);
+	debugOverlay->ScreenPosition(head, start);
+	Vec3 end;
+	debugOverlay->ScreenPosition(head + Math::AngleForward(*p->GetEyeAngles())*length, end);
+
+	Draw::AddLine(Rect2i{start.As<i32, 2>(), end.As<i32, 2>()}, ImColor(0.f, 0.f, 0.f, 0.5f*color.Value.w), 3.f);
+	Draw::AddLine(Rect2i{start.As<i32, 2>(), end.As<i32, 2>()}, color, 1.f);
+}
+
+void DrawHealthBar(const Rect2& box, C_BasePlayer* p, ImColor color, bool healthBased)
+{
+	f32 f = 1.f - std::max(std::min(p->GetHealth(), 100), 0) / 100.f;
+
+	if (healthBased)
+	{
+		Draw::AddRectFilled(Rect2i{Vec2i{(i32)box.x.x - 6, (i32)box.x.y}, Vec2i{(i32)box.x.x - 2, (i32)(box.x.y + box.y.y)}}, ImColor(0.f, 0.f, 0.f, 0.5f));
+		Draw::AddRectFilled(Rect2i{Vec2i{(i32)box.x.x - 5, (i32)box.x.y+1 + (i32)(box.y.y*f)}, Vec2i{(i32)box.x.x - 3, (i32)(box.x.y + box.y.y)-1}},
+				ImColor(f, 1.f - f, 0.f, 1.f));
+	}
+	else
+	{
+		Draw::AddRectFilled(Rect2i{Vec2i{(i32)box.x.x - 6, (i32)box.x.y}, Vec2i{(i32)box.x.x - 2, (i32)(box.x.y + box.y.y)}}, ImColor(0.f, 0.f, 0.f, color.Value.w*0.5f));
+		Draw::AddRectFilled(Rect2i{Vec2i{(i32)box.x.x - 5, (i32)box.x.y+1 + (i32)(box.y.y*f)}, Vec2i{(i32)box.x.x - 3, (i32)(box.x.y + box.y.y)-1}}, color);
+	}
+}
+
+void DrawEnemy(C_BasePlayer* p, C_BasePlayer* lp)
 {
 	PlayerInfo info;
 	engine->GetPlayerInfo(p->GetIndex(), &info);
@@ -229,58 +292,32 @@ void DrawEnemy(C_BasePlayer* p)
 	bool visible = Util::IsVisible(p, Bones::HEAD, 180.f, false);
 
 	if (visible)
-		DrawBox(box, p, Settings::ESP::Enemies::boxColorVisible, Settings::ESP::Enemies::box);
-	else
-		DrawBox(box, p, Settings::ESP::Enemies::boxColorInvisible, Settings::ESP::Enemies::box);
-
-	Vec2 pos;
-	if (ESP::WorldToScreen(p->GetBonePosition(Bones::HEAD), pos))
-	{}
-	Draw::AddText(pos.As<i32>(), "TTT"s, ImColor(0.f, 1.f, 0.f, 1.f), 0);
-
-	/*
-	Draw::AddRect({box.x, box.x+Vec2i(10,10)}, ImColor(0.f, 1.0f, 1.f, 1.f));
-	Draw::AddRect({box.y, box.y+Vec2i(10,10)}, ImColor(1.f, 0.0f, 1.f, 1.f));
-	Draw::AddText(box.x, fmt::format("name = {}", info.name.data()), ImColor(1.f, 0.0f, 1.f, 1.f), 0);
-
-	Vec3 vOrigin = p->GetVecOrigin();
-	Vec3 min = p->GetCollideable()->OBBMins() + vOrigin;
-	Vec3 max = p->GetCollideable()->OBBMaxs() + vOrigin;
-
-	Vec3 points[] = { Vec3( min.x, min.y, min.z ),
-						Vec3( min.x, max.y, min.z ),
-						Vec3( max.x, max.y, min.z ),
-						Vec3( max.x, min.y, min.z ),
-						Vec3( min.x, min.y, max.z ),
-						Vec3( min.x, max.y, max.z ),
-						Vec3( max.x, max.y, max.z ),
-						Vec3( max.x, min.y, max.z ) };
-
-	int edges[12][2] = {
-			{ 0, 1 },
-			{ 1, 2 },
-			{ 2, 3 },
-			{ 3, 0 },
-			{ 4, 5 },
-			{ 5, 6 },
-			{ 6, 7 },
-			{ 7, 4 },
-			{ 0, 4 },
-			{ 1, 5 },
-			{ 2, 6 },
-			{ 3, 7 },
-	};
-
-	for ( const auto edge : edges )
 	{
-		Vec2 p1, p2;
-		bool v = ESP::WorldToScreen( points[edge[0]], p1 );
-		v &= ESP::WorldToScreen( points[edge[1]], p2 );
-		if (!v)
-			return;
-		Draw::AddLine( Rect2i(Vec2i(p1.x, p1.y).As<i32>(), Vec2(p2.x, p2.y).As<i32>()), ImColor(1.f, 1.f, 0.f, 1.f) );
+		DrawBox(box, p, Settings::ESP::Enemies::boxColorVisible, Settings::ESP::Enemies::box);
+		if (Settings::ESP::Enemies::skeleton)
+			DrawSkeleton(p, Settings::ESP::Enemies::skeletonColorVisible);
+		if (Settings::ESP::Enemies::barrel)
+			DrawBarrel(p, Settings::ESP::Enemies::barrelColor, Settings::ESP::Enemies::barrelLength);
 	}
-	*/
+	else
+	{
+		DrawBox(box, p, Settings::ESP::Enemies::boxColorInvisible, Settings::ESP::Enemies::box);
+		if (Settings::ESP::Enemies::skeleton)
+			DrawSkeleton(p, Settings::ESP::Enemies::skeletonColorInvisible);
+		if (Settings::ESP::Enemies::barrel)
+			DrawBarrel(p, Settings::ESP::Enemies::barrelColor, Settings::ESP::Enemies::barrelLength);
+	}
+	if (Settings::ESP::Enemies::healthBar)
+		DrawHealthBar(box, p, Settings::ESP::Enemies::healthBarColor, Settings::ESP::Enemies::healthBarHealthBasedColor);
+	
+	// Informations
+	if (Settings::ESP::Enemies::name)
+	{
+		Vec2 nameSz = UI::GetTextSize("BOT Test"s, UI::espfont, 20);
+		const i32 x = (i32)box.x.x + (box.y.x - nameSz.x) / 2.f;
+		Draw::AddRectFilled(Rect2i{Vec2i{x, box.x.y - 20}, Vec2i{x + nameSz.x, box.x.y - 20 + nameSz.y}}, ImColor(0.f, 0.f, 0.f, .6f*Settings::ESP::Enemies::nameColor.w));
+		Draw::AddText(Vec2i{x, box.x.y - 20}, "BOT Test"s, Settings::ESP::Enemies::nameColor, TextFlags::Shadow);
+	}
 }
 
 void ESP::Paint()
@@ -311,7 +348,7 @@ void ESP::Paint()
 				continue;
 
 			if (p->GetTeam() != lp->GetTeam() && Settings::ESP::Enemies::enabled)
-				DrawEnemy(p);
+				DrawEnemy(p, lp);
 			//if (p->GetTeam() == lp->GetTeam())
 				//DrawAlly(p);
 		}

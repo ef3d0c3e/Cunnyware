@@ -2962,3 +2962,58 @@ i32 UI::PieMenu(const ImVec2& center, const char* popup_id, const std::vector<st
 	ImGui::PopStyleColor(2);
 	return ret;
 }
+
+Vec2 UI::GetTextSize(const std::string& text, ImFont* font, f32 size)
+{
+	const f32 fontSize = 20.f;
+
+	const f32 h = size;
+
+	const f32 lineHeight = size;
+	const f32 scale = size / fontSize;
+
+	Vec2 textSize{0.f, 0.f};
+	f32 lineWidth = 0.0f;
+
+	const char* s = text.data();
+	const char* textEnd = s + text.size()-1;
+	while (s < textEnd)
+	{
+		// Decode and advance source
+		const char* prev_s = s;
+		u32 c = (u32)*s;
+		if (c < 0x80)
+		{
+			s += 1;
+		}
+		else
+		{
+			s += ImTextCharFromUtf8(&c, s, textEnd);
+			if (c == 0) // Malformed UTF-8?
+				break;
+		}
+
+		if (c < 0x20) [[unlikely]] // ' '
+		{
+			if (c == '\n') [[likely]]
+			{
+				textSize.x = std::max(textSize.x, lineWidth);
+				textSize.y += lineHeight;
+				lineWidth = 0.0f;
+				continue;
+			}
+			if (c == '\r') [[unlikely]]
+				continue;
+		}
+
+		lineWidth += font->GetCharAdvance(c) * scale;
+	}
+
+	if (textSize.x < lineWidth)
+		textSize.x = lineWidth;
+
+	if (lineWidth > 0 || textSize.y == 0.0f)
+		textSize.y += lineHeight;
+
+	return textSize;
+}

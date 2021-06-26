@@ -26,6 +26,7 @@ struct HSCRIPT
 { i32 unused; };
 typedef u32 HTOOLHANDLE;
 typedef u32 VPANEL;
+typedef u16 MDLHandle;
 
 struct CUserCmd
 {

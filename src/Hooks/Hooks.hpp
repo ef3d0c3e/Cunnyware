@@ -47,6 +47,9 @@ namespace SDL2
 {
 	void Hook();
 	void UnHook();
+
+	extern bool wantRebuild;
+	extern u32 fontFlags;
 }
 
 namespace SetKeyCodeState

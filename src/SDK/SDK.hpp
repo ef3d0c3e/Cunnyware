@@ -18,5 +18,6 @@
 #include "IVDebugOverlay.hpp"
 #include "IGameTypes.hpp"
 #include "IEngineTrace.hpp"
+#include "IVModelInfo.hpp"
 
 #endif // SDK_HPP

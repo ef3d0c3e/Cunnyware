@@ -25,6 +25,7 @@ extern IClientEntityList* entityList;
 extern IVDebugOverlay* debugOverlay;
 extern IGameTypes* gameTypes;
 extern IEngineTrace* trace;
+extern IVModelInfo* modelInfo;
 
 #include "Util/VMT.hpp"
 extern VMT* inputInternalVMT;

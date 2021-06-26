@@ -1,5 +1,6 @@
 #include "../ImGUI/imgui.h"
 #include "../ImGUI/imgui_internal.h"
+#include "../ImGUI/imgui_freetype.h"
 #include "../ImGUI/examples/imgui_impl_opengles3.h"
 #include "../ImGUI/examples/libs/gl3w/GL/gl3w.h"
 #include "../Shortcuts.hpp"
@@ -14,9 +15,14 @@
 INCBIN(PlexRegular, "../src/Resources/IBMPlexSans-Medium.ttf");
 INCBIN(PlexBold, "../src/Resources/IBMPlexSans-Bold.ttf");
 INCBIN(PlexMono, "../src/Resources/IBMPlexMono-Text.ttf");
+INCBIN(Unifont, "../src/Resources/Pixel-UniCode.ttf");
 ImFont* UI::plex_regular = nullptr;
 ImFont* UI::plex_bold = nullptr;
 ImFont* UI::plex_mono = nullptr;
+ImFont* UI::espfont = nullptr;
+
+bool SDL2::wantRebuild = true;
+u32 SDL2::fontFlags = 0;
 
 std::uintptr_t oSwapWindow;
 std::uintptr_t swapWindowOffset;
@@ -104,14 +110,24 @@ static void SwapWindow(SDL_Window* window)
 		io.KeyMap[ImGuiKey_Y] = SDLK_y;
 		io.KeyMap[ImGuiKey_Z] = SDLK_z;
 
+
 		ImFontConfig config;
 		config.OversampleH = 4;
 		config.OversampleV = 4;
 		config.PixelSnapH = true;
 		config.SizePixels = 20.f;
-		UI::plex_regular = io.Fonts->AddFontFromMemoryTTF(const_cast<unsigned char*>(resPlexRegularData), resPlexRegularSize, 20.f, &config);
-		UI::plex_bold = io.Fonts->AddFontFromMemoryTTF(const_cast<unsigned char*>(resPlexBoldData), resPlexBoldSize, 20.f, &config);
-		UI::plex_mono = io.Fonts->AddFontFromMemoryTTF(const_cast<unsigned char*>(resPlexMonoData), resPlexMonoSize, 20.f, &config);
+		UI::plex_regular = io.Fonts->AddFontFromMemoryTTF(const_cast<u8*>(resPlexRegularData), resPlexRegularSize, 20.f, &config);
+		UI::plex_bold = io.Fonts->AddFontFromMemoryTTF(const_cast<u8*>(resPlexBoldData), resPlexBoldSize, 20.f, &config);
+		UI::plex_mono = io.Fonts->AddFontFromMemoryTTF(const_cast<u8*>(resPlexMonoData), resPlexMonoSize, 20.f, &config);
+
+		ImFontConfig uniconfig;
+		uniconfig.OversampleH = 2;
+		uniconfig.OversampleV = 2;
+		uniconfig.PixelSnapH = true;
+		uniconfig.SizePixels = 22.f;
+		UI::espfont = io.Fonts->AddFontFromMemoryTTF(const_cast<u8*>(resUnifontData), resUnifontSize, 22.f, &uniconfig, io.Fonts->GetGlyphRangesDefault());
+
+		//io.Fonts->Build();
 
 		ImVec4* colors = ImGui::GetStyle().Colors;
 		colors[ImGuiCol_Text] = ImVec4(0.90f, 0.90f, 0.90f, 1.00f);
@@ -196,6 +212,15 @@ static void SwapWindow(SDL_Window* window)
 	ImGuiStyle* style = &ImGui::GetStyle();
 	style->AntiAliasedLines = Settings::Visuals::antialiasing;
 	style->AntiAliasedFill = Settings::Visuals::antialiasing;
+
+	if (SDL2::wantRebuild)
+	{
+		ImGuiFreeType::BuildFontAtlas(io.Fonts, SDL2::fontFlags);
+		SDL2::wantRebuild = false;
+		
+ImGui_ImplOpenGL3_DestroyDeviceObjects();
+ImGui_ImplOpenGL3_CreateDeviceObjects();
+	}
 
 	ImGui_ImplOpenGL3_NewFrame();
 

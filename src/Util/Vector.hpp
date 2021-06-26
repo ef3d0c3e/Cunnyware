@@ -713,18 +713,32 @@ public:
 	/// \tparam R Type to convert the primitives to
 	/// \returns A vector .
 	////////////////////////////////////////////////
-	template <class R>
+	template <class R, size_type M = N, template <class, size_type> class Base = VectorBase>
 	[[nodiscard("Conversion")]] vector_inline constexpr auto
 		As() const noexcept
 	{
-		Vector<R, N, VectorBase, S> ret;
+		if constexpr (N >= M)
+		{
+			Vector<R, M, Base, S> ret;
 
-		vector_foreach_do(
-			ret.template Get<i>() = static_cast<R>(Get<i>()),
-			ret.operator[](i) = static_cast<R>(operator[](i))
-		)
+			vector_foreach_do_v(
+					ret.template Get<i>() = static_cast<R>(Get<i>()),
+					ret.operator[](i) = static_cast<R>(operator[](i)),
+			false, M, __expand(&, this))
 
-		return ret;
+			return ret;
+		}
+		else
+		{
+			Vector<R, M, Base, S> ret;
+
+			vector_foreach_do_v(
+					ret.template Get<i>() = static_cast<R>(Get<i>()),
+					ret.operator[](i) = static_cast<R>(operator[](i)),
+			false, N, __expand(&, this))
+
+			return ret;
+		}
 	}
 	
 	////////////////////////////////////////////////
