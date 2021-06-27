@@ -17,7 +17,8 @@ The main goal of **Cunnyware** is to prove, once move, the supremacy of free (as
  * A free (as in freedom) operating system
 
 # Progress
-Currently, the cheat is not in an usable form.
+ * Jun 27, 2021: Progress has been made on the esp ![ESP Progress](screen.png)
+
 
 # License
 Licensed under the [GNU GPL version 3](./LICENSE).
