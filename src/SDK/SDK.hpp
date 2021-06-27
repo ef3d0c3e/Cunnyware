@@ -19,5 +19,6 @@
 #include "IGameTypes.hpp"
 #include "IEngineTrace.hpp"
 #include "IVModelInfo.hpp"
+#include "C_CSPlayerResource.hpp"
 
 #endif // SDK_HPP

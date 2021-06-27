@@ -1,6 +1,8 @@
 #include "Util.hpp"
 #include "../Interface.hpp"
 #include "../SDK/IEngineTrace.hpp"
+#include "../SDK/C_WeaponC4.hpp"
+#include "../SDK/Recv.hpp"
 
 bool Util::IsDangerZone()
 {
@@ -68,7 +70,18 @@ bool Util::IsSpotVisibleThroughEnemies(C_BasePlayer *player, Vec3 spot, f32 fov,
 
 bool Util::IsPlanting(C_BasePlayer* player)
 {
-	
+	C_BaseCombatWeapon* activeWeapon = (C_BaseCombatWeapon*)entityList->GetClientEntityFromHandle(player->GetActiveWeapon());
+	if (!activeWeapon)
+		return false;
+
+	ClientClass* clientClass = activeWeapon->GetClientClass();
+	if (!clientClass)
+		return false;
+
+	if (clientClass->classID != EClassIds::CC4)
+		return false;
+
+	return ((C_WeaponC4*)activeWeapon)->GetStartedArming();
 }
 
 bool Util::IsTeamMate(C_BasePlayer* player, C_BasePlayer* localplayer)
@@ -76,3 +89,12 @@ bool Util::IsTeamMate(C_BasePlayer* player, C_BasePlayer* localplayer)
 	
 }
 
+bool Util::IsOtherWeapon(CSWeaponType type)
+{
+	return (type >= CSWeaponType::PISTOL && type <= CSWeaponType::MACHINEGUN) || type >= CSWeaponType::STACKABLEITEM;
+}
+
+bool Util::IsGrenade(CSWeaponType type)
+{
+	return type == CSWeaponType::GRENADE;
+}

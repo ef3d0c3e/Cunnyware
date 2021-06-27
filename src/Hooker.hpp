@@ -13,6 +13,7 @@ void FindPlayerAnimStateOffset();
 void FindPlayerAnimOverlayOffset();
 void FindAbsFunctions();
 void FindSequenceActivity();
+void FindPlayerResource();
 }
 
 #endif // HOOKER_HPP

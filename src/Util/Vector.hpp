@@ -2,7 +2,8 @@
 #define VECTOR_HPP
 
 #if defined(__GNUC__)
-#define vector_inline /** @cond */ __attribute__((always_inline)) /** @endcond */
+//#define vector_inline /** @cond */ __attribute__((always_inline)) /** @endcond */
+#define vector_inline /** @cond */ /* */ /** @endcond */
 #else
 #define vector_inline /** @cond */ inline /** @endcond */
 #endif

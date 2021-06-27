@@ -1,6 +1,7 @@
 #include "Hooker.hpp"
 #include "Offsets.hpp"
 #include "Util/Util.hpp"
+#include "Interface.hpp"
 
 u32 Offsets::playerAnimStateOffset = 0;
 void Hooker::FindPlayerAnimStateOffset()
@@ -82,4 +83,13 @@ void Hooker::FindSequenceActivity()
 			"xxxx?xxxxxxxxxxx?xxx????xxxx?xxxxx?xxx?x");
 
 	GetSeqActivity = reinterpret_cast<GetSequenceActivityFn>(funcAddr);
+}
+
+void Hooker::FindPlayerResource()
+{
+	std::uintptr_t instruction_addr = FindPatternInModule("/client_client.so",
+			u8"\x48\x8B\x05\x00\x00\x00\x00\x55\x48\x89\xE5\x48\x85\xC0\x74\x10\x48",
+			"xxx????xxxxxxxxxx");
+
+	csPlayerResource = reinterpret_cast<C_CSPlayerResource**>(GetAbsoluteAddress(instruction_addr, 3, 7));
 }

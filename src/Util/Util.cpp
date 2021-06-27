@@ -2,6 +2,8 @@
 #include <link.h>
 #include <unistd.h>
 #include <string.h>
+#include <codecvt>
+#include <locale>
 #include "VMT.hpp"
 
 std::string Demangle(const char* name)
@@ -122,5 +124,18 @@ std::uintptr_t FindPatternInModule(const std::string& moduleNamme, const std::u8
 		throw Exception("FindPatternInModule({}, ...) could not find pattern", moduleNamme);
 
 	return ret;
+}
+
+std::string codepointToUtf8(char32_t codepoint)
+{
+	try
+	{
+		std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> convert;
+		return convert.to_bytes(&codepoint, &codepoint+1);
+	}
+	catch (std::range_error& e)
+	{
+		return "RANGE_ERROR";
+	}
 }
 

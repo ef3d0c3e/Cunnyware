@@ -3,6 +3,7 @@
 
 #include "../SDK/C_BaseEntity.hpp"
 #include "../SDK/C_BasePlayer.hpp"
+#include "../SDK/CCSWeaponInfo.hpp"
 
 MAKE_CENUM_Q(GameTypes, i32,
 	CLASSIC, 0,     // Casual and competitive (see gamerules_*.cfg)
@@ -21,6 +22,8 @@ namespace Util
 	bool IsSpotVisibleThroughEnemies(C_BasePlayer *player, Vec3 spot, f32 fov = 180.f, bool smoke_check = false);
 	bool IsPlanting(C_BasePlayer* player);
 	bool IsTeamMate(C_BasePlayer* player, C_BasePlayer* localplayer);
+	bool IsOtherWeapon(CSWeaponType type);
+	bool IsGrenade(CSWeaponType type);
 }
 
 

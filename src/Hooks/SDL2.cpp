@@ -15,7 +15,7 @@
 INCBIN(PlexRegular, "../src/Resources/IBMPlexSans-Medium.ttf");
 INCBIN(PlexBold, "../src/Resources/IBMPlexSans-Bold.ttf");
 INCBIN(PlexMono, "../src/Resources/IBMPlexMono-Text.ttf");
-INCBIN(Unifont, "../src/Resources/Pixel-UniCode.ttf");
+INCBIN(ESPFont, "../src/Resources/ESPFont.ttf");
 ImFont* UI::plex_regular = nullptr;
 ImFont* UI::plex_bold = nullptr;
 ImFont* UI::plex_mono = nullptr;
@@ -120,14 +120,25 @@ static void SwapWindow(SDL_Window* window)
 		UI::plex_bold = io.Fonts->AddFontFromMemoryTTF(const_cast<u8*>(resPlexBoldData), resPlexBoldSize, 20.f, &config);
 		UI::plex_mono = io.Fonts->AddFontFromMemoryTTF(const_cast<u8*>(resPlexMonoData), resPlexMonoSize, 20.f, &config);
 
+		constexpr static std::array<ImWchar, 25> ESPRange = {
+			0x0020, 0x0787,
+			0x0e01, 0x0e0c,
+			0x13a0, 0x13de,
+			0x1680, 0x1685,
+			0x1d00, 0x1e28,
+			0x2010, 0x22ba,
+			0x2500, 0x2681,
+			0x2801, 0x283f,
+			0x2e81, 0x2e8a,
+			0x2f00, 0x2f03,
+			0xdb80, 0xdba7,
+			0xe000, 0xf8ff, 0};
 		ImFontConfig uniconfig;
-		uniconfig.OversampleH = 2;
-		uniconfig.OversampleV = 2;
-		uniconfig.PixelSnapH = true;
-		uniconfig.SizePixels = 22.f;
-		UI::espfont = io.Fonts->AddFontFromMemoryTTF(const_cast<u8*>(resUnifontData), resUnifontSize, 22.f, &uniconfig, io.Fonts->GetGlyphRangesDefault());
-
-		//io.Fonts->Build();
+		uniconfig.OversampleH = 3;
+		uniconfig.OversampleV = 3;
+		uniconfig.PixelSnapH = false;
+		uniconfig.SizePixels = 18.f;
+		UI::espfont = io.Fonts->AddFontFromMemoryTTF(const_cast<u8*>(resESPFontData), resESPFontSize, 18.f, &uniconfig, ESPRange.data());
 
 		ImVec4* colors = ImGui::GetStyle().Colors;
 		colors[ImGuiCol_Text] = ImVec4(0.90f, 0.90f, 0.90f, 1.00f);

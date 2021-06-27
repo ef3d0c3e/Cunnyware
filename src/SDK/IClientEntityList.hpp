@@ -2,12 +2,12 @@
 #define SDK_ICLIENTENTITYLIST_HPP
 
 #include "Defs.hpp"
+#include "CBaseHandle.hpp"
 
 
 class IClientEntity;
 class ClientClass;
 class IClientNetworkable;
-class CBaseHandle;
 class IClientUnknown;
 class C_BaseEntity;
 
@@ -30,17 +30,17 @@ public:
 	// NOTE: This function is only a convenience wrapper.
 	// It returns GetClientNetworkable( entnum )->GetIClientEntity().
 	virtual C_BaseEntity* GetClientEntity(i32 entnum) = 0;
-	virtual IClientEntity* GetClientEntityFromHandle(/*CBaseHandle*/ void* hEnt) = 0;
+	virtual IClientEntity* GetClientEntityFromHandle(const CBaseHandle* hEnt) = 0;
 
 	// Returns number of entities currently in use
-	virtual int NumberOfEntities(bool includeNonNetworkable) = 0;
+	virtual i32 NumberOfEntities(bool includeNonNetworkable) = 0;
 
 	// Returns highest index actually used
-	virtual int GetHighestEntityIndex() = 0;
+	virtual i32 GetHighestEntityIndex() = 0;
 
 	// Sizes entity list to specified size
 	virtual void SetMaxEntities(i32 maxents) = 0;
-	virtual int GetMaxEntities() = 0;
+	virtual i32 GetMaxEntities() = 0;
 	virtual EntityCacheInfo_t* GetClientNetworkableArray() = 0;
 };
 

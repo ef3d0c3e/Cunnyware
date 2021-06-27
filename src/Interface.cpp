@@ -131,6 +131,7 @@ IVDebugOverlay* debugOverlay = nullptr;
 IGameTypes* gameTypes = nullptr;
 IEngineTrace* trace = nullptr;
 IVModelInfo* modelInfo = nullptr;
+C_CSPlayerResource** csPlayerResource = nullptr;
 
 void Interface::FindInterfaces()
 {
@@ -174,6 +175,7 @@ void Interface::FindInterfaces()
 	Hooker::FindPlayerAnimOverlayOffset();
 	Hooker::FindAbsFunctions();
 	Hooker::FindSequenceActivity();
+	Hooker::FindPlayerResource();
 }
 
 VMT* inputInternalVMT = nullptr;

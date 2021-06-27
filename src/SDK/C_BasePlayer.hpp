@@ -5,6 +5,7 @@
 #include "C_BaseEntity.hpp"
 #include "AnimationLayer.hpp"
 #include "CCSGOAnimState.hpp"
+#include "CBaseHandle.hpp"
 
 static constexpr inline std::size_t MaxStudioBones = 128;
 static constexpr inline u8 LifeAlive = 0;
@@ -183,14 +184,15 @@ public:
 		return (f32*)((std::uintptr_t)this + offsets.DT_CSPlayer.m_flLowerBodyYawTarget);
 	}
 	
-	void* GetActiveWeapon()
+	CBaseHandle* GetActiveWeapon()
 	{
-		return (void*)((std::uintptr_t)this + offsets.DT_BaseCombatCharacter.m_hActiveWeapon);
+		return (CBaseHandle*)((std::uintptr_t)this + offsets.DT_BaseCombatCharacter.m_hActiveWeapon);
 	}
 	
-	i32* GetWeapons()
+	static constexpr inline std::size_t MaxWeapons = 64;
+	const std::array<CBaseHandle, MaxWeapons>& GetWeapons()
 	{
-		return (i32*)((std::uintptr_t)this + offsets.DT_BaseCombatCharacter.m_hMyWeapons);
+		return *(const std::array<CBaseHandle, MaxWeapons>*)((std::uintptr_t)this + offsets.DT_BaseCombatCharacter.m_hMyWeapons);
 	}
 	
 	i32* GetWearables()

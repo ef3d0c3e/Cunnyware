@@ -26,6 +26,7 @@ extern IVDebugOverlay* debugOverlay;
 extern IGameTypes* gameTypes;
 extern IEngineTrace* trace;
 extern IVModelInfo* modelInfo;
+extern C_CSPlayerResource** csPlayerResource;
 
 #include "Util/VMT.hpp"
 extern VMT* inputInternalVMT;

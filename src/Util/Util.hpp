@@ -169,4 +169,6 @@ auto make_array(T&& t, Ts&&... ts)
 	return std::array<T, sizeof...(Ts)+1>{std::forward<T>(t), std::forward<Ts>(ts)...};
 }
 
+std::string codepointToUtf8(char32_t codepoint);
+
 #endif // UTIL_HPP

@@ -5,6 +5,7 @@
 #include "../Hooks/Hooks.hpp"
 #include "../SDK/C_BaseEntity.hpp"
 #include "../SDK/C_BasePlayer.hpp"
+#include "../SDK/C_BaseCombatWeapon.hpp"
 #include "../SDK/Recv.hpp"
 #include "../SDK/ICollideable.hpp"
 #include "../SDK/StudioHdr.hpp"
@@ -42,10 +43,13 @@ EXPORT(bool, Settings::ESP::Enemies::clan) = false;
 EXPORT(ImVec4, Settings::ESP::Enemies::clanColor) = ImVec4(.54f, .87f, .53f, 1.f);
 EXPORT(bool, Settings::ESP::Enemies::hp) = true;
 EXPORT(ImVec4, Settings::ESP::Enemies::hpColor) = ImVec4(.94f, .56f, .56f, 1.f);
+EXPORT(bool, Settings::ESP::Enemies::armor) = true;
+EXPORT(ImVec4, Settings::ESP::Enemies::armorColor) = ImVec4(.82f, .82f, .82f, 1.f);
 EXPORT(bool, Settings::ESP::Enemies::kit) = false;
 EXPORT(ImVec4, Settings::ESP::Enemies::kitColor) = ImVec4(.18f, .65f, .98f, 1.f);
 EXPORT(bool, Settings::ESP::Enemies::bomb) = false;
 EXPORT(ImVec4, Settings::ESP::Enemies::bombColor) = ImVec4(.18f, .65f, .98f, 1.f);
+EXPORT(ImVec4, Settings::ESP::Enemies::bombColorPlanting) = ImVec4(.48f, .65f, .88f, 1.f);
 EXPORT(bool, Settings::ESP::Enemies::hostage) = false;
 EXPORT(ImVec4, Settings::ESP::Enemies::hostageColor) = ImVec4(.88f, .52f, .06f, 1.f);
 EXPORT(bool, Settings::ESP::Enemies::reloading) = true;
@@ -310,14 +314,131 @@ void DrawEnemy(C_BasePlayer* p, C_BasePlayer* lp)
 	if (Settings::ESP::Enemies::healthBar)
 		DrawHealthBar(box, p, Settings::ESP::Enemies::healthBarColor, Settings::ESP::Enemies::healthBarHealthBasedColor);
 	
+	//{{{ Top
 	// Informations
 	if (Settings::ESP::Enemies::name)
 	{
-		Vec2 nameSz = UI::GetTextSize("BOT Test"s, UI::espfont, 20);
-		const i32 x = (i32)box.x.x + (box.y.x - nameSz.x) / 2.f;
-		Draw::AddRectFilled(Rect2i{Vec2i{x, box.x.y - 20}, Vec2i{x + nameSz.x, box.x.y - 20 + nameSz.y}}, ImColor(0.f, 0.f, 0.f, .6f*Settings::ESP::Enemies::nameColor.w));
-		Draw::AddText(Vec2i{x, box.x.y - 20}, "BOT Test"s, Settings::ESP::Enemies::nameColor, TextFlags::Shadow);
+		std::string name(info.name.data());
+		const Vec2 nameSz = UI::GetTextSize(name, UI::espfont, 18);
+
+		const i32 x = (i32)box.x.x + ((i32)(box.y.x - nameSz.x) >> 1);
+		Draw::AddRectFilled(Rect2i{Vec2i{x - 4, box.x.y - 20}, Vec2i{x + nameSz.x + 4, box.x.y - 20 + nameSz.y}}, ImColor(0.f, 0.f, 0.f, .6f*Settings::ESP::Enemies::nameColor.w));
+		Draw::AddRectFilled(Rect2i{Vec2i{x - 4, box.x.y - 20}, Vec2i{x + nameSz.x + 4, box.x.y - 20 + 3}}, Settings::ESP::Enemies::nameColor);
+		Draw::AddText(Vec2i{x, box.x.y - 18}, std::move(name), Settings::ESP::Enemies::nameColor, TextFlags::Shadow);
 	}
+	if (Settings::ESP::Enemies::clan)
+	{
+		// TODO...
+	}
+	//}}}
+	//{{{ Bottom
+	{
+		//{{{ Current weapon
+		i32 bottom = box.x.y + box.y.y + 2;
+		if (Settings::ESP::Enemies::currentWeapon)
+		{
+			C_BaseCombatWeapon* weapon = reinterpret_cast<C_BaseCombatWeapon*>(entityList->GetClientEntityFromHandle(p->GetActiveWeapon()));
+
+			std::string name = codepointToUtf8(0xE000 + *weapon->GetItemDefinitionIndex());
+
+			const Vec2 nameSz = UI::GetTextSize(name, UI::espfont, 18);
+			const i32 x = (i32)box.x.x + ((i32)(box.y.x - nameSz.x) >> 1);
+			Draw::AddText(Vec2i{x, bottom}, std::move(name), Settings::ESP::Enemies::currentWeaponColor, TextFlags::Shadow);
+			
+			bottom += 18;
+		}
+		//}}}
+		//{{{ Other weapons
+		if (Settings::ESP::Enemies::otherWeapon)
+		{
+			const CBaseHandle activeWeapon = *p->GetActiveWeapon();
+			const auto& weapons = p->GetWeapons();
+
+			std::string name;
+			bool first = true;
+			for (std::size_t i = 0; i < C_BasePlayer::MaxWeapons; ++i)
+			{
+				if (weapons[i].index == -1)
+					break;
+				if (weapons[i].index == activeWeapon.index)
+					continue;
+				C_BaseCombatWeapon* weapon = reinterpret_cast<C_BaseCombatWeapon*>(entityList->GetClientEntity( weapons[i].index & 0xFFF ));
+				if (weapon == nullptr || !Util::IsOtherWeapon(weapon->GetCSWpnData()->GetWeaponType()))
+					continue;
+				if (first)
+					first = false, name += " " + codepointToUtf8(0xE000 + *weapon->GetItemDefinitionIndex());
+				else
+					name += codepointToUtf8(0xE000 + *weapon->GetItemDefinitionIndex());
+			}
+
+
+			const Vec2 nameSz = UI::GetTextSize(name, UI::espfont, 18);
+			const i32 x = (i32)box.x.x + ((i32)(box.y.x - nameSz.x) >> 1);
+			Draw::AddText(Vec2i{x, bottom}, std::move(name), Settings::ESP::Enemies::otherWeaponColor, TextFlags::Shadow);
+			
+			bottom += 18;
+		}//}}}
+		//{{{ Grenades
+		if (Settings::ESP::Enemies::grenades)
+		{
+			const CBaseHandle activeWeapon = *p->GetActiveWeapon();
+			const auto& weapons = p->GetWeapons();
+
+			std::string name;
+			bool first = true;
+			for (std::size_t i = 0; i < C_BasePlayer::MaxWeapons; ++i)
+			{
+				if (weapons[i].index == -1)
+					break;
+				if (weapons[i].index == activeWeapon.index)
+					continue;
+				C_BaseCombatWeapon* weapon = reinterpret_cast<C_BaseCombatWeapon*>(entityList->GetClientEntity( weapons[i].index & 0xFFF ));
+				if (weapon == nullptr || !Util::IsGrenade(weapon->GetCSWpnData()->GetWeaponType()))
+					continue;
+				if (first)
+					first = false, name += " " + codepointToUtf8(0xE000 + *weapon->GetItemDefinitionIndex());
+				else
+					name += codepointToUtf8(0xE000 + *weapon->GetItemDefinitionIndex());
+			}
+
+
+			const Vec2 nameSz = UI::GetTextSize(name, UI::espfont, 18);
+			const i32 x = (i32)box.x.x + ((i32)(box.y.x - nameSz.x) >> 1);
+			Draw::AddText(Vec2i{x, bottom}, std::move(name), Settings::ESP::Enemies::grenadesColor, TextFlags::Shadow);
+			
+			bottom += 18;
+		}//}}}
+	}
+	//}}}
+	// {{{ Right
+	{
+		Vec2 right{box.x.x + box.y.x + 2, box.x.y};
+		if (Settings::ESP::Enemies::kit && p->HasDefuser())
+		{
+			Draw::AddText(Vec2i{right.x, right.y}, "\ue066"s, Settings::ESP::Enemies::kitColor, TextFlags::Shadow);
+			right.y += 18;
+		}
+		if (Settings::ESP::Enemies::bomb)
+		{
+			Draw::AddText(Vec2i{right.x, right.y}, "\ue031"s, Settings::ESP::Enemies::bombColor, TextFlags::Shadow);
+			//Draw::AddText(Vec2i{right.x, right.y}, "\ue031 Planting"s, Settings::ESP::Enemies::bombColorPlanting, TextFlags::Shadow);
+			right.y += 18;
+		}
+		if (Settings::ESP::Enemies::armor)
+		{
+			if (p->HasHelmet())
+			{
+				Draw::AddText(Vec2i{right.x, right.y}, "\ue065"s, Settings::ESP::Enemies::armorColor, TextFlags::Shadow);
+				right.y += 18;
+			}
+			else if (p->GetArmor() > 0)
+			{
+				Draw::AddText(Vec2i{right.x, right.y}, "\ue064"s, Settings::ESP::Enemies::armorColor, TextFlags::Shadow);
+				right.y += 18;
+			}
+		}
+	}
+	// }}}
 }
 
 void ESP::Paint()

@@ -2965,7 +2965,7 @@ i32 UI::PieMenu(const ImVec2& center, const char* popup_id, const std::vector<st
 
 Vec2 UI::GetTextSize(const std::string& text, ImFont* font, f32 size)
 {
-	const f32 fontSize = 20.f;
+	const f32 fontSize = font->FontSize;
 
 	const f32 h = size;
 
@@ -2976,7 +2976,7 @@ Vec2 UI::GetTextSize(const std::string& text, ImFont* font, f32 size)
 	f32 lineWidth = 0.0f;
 
 	const char* s = text.data();
-	const char* textEnd = s + text.size()-1;
+	const char* textEnd = s + text.size();
 	while (s < textEnd)
 	{
 		// Decode and advance source

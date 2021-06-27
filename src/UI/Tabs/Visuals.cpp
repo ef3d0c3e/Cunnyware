@@ -62,7 +62,7 @@ static void ESPLeft()
 			ImGui::NextColumn();
 			{
 				UI::Checkbox("Health-based", &Settings::ESP::Enemies::healthBarHealthBasedColor);
-				UI::Desc("The healt bar color will\nadapt to the targer's health");
+				UI::Desc("The healt bar color will\nadapt to the target's health");
 			}
 			ImGui::EndColumns();
 
@@ -114,10 +114,12 @@ static void ESPRight()
 			UI::ColorEdit(std::make_pair("Clantag Color"s, &Settings::ESP::Enemies::clanColor));
 			UI::Checkbox("Health", &Settings::ESP::Enemies::hp);
 			UI::ColorEdit(std::make_pair("Health Color"s, &Settings::ESP::Enemies::hpColor));
+			UI::Checkbox("Armor", &Settings::ESP::Enemies::armor);
+			UI::ColorEdit(std::make_pair("Armor Color"s, &Settings::ESP::Enemies::armorColor));
 			UI::Checkbox("Defuse kit", &Settings::ESP::Enemies::kit);
 			UI::ColorEdit(std::make_pair("Defuse Kit Color"s, &Settings::ESP::Enemies::kitColor));
 			UI::Checkbox("Bomb", &Settings::ESP::Enemies::bomb);
-			UI::ColorEdit(std::make_pair("Bomb Color"s, &Settings::ESP::Enemies::bombColor));
+			UI::ColorEdit(std::make_pair("Bomb Color"s, &Settings::ESP::Enemies::bombColor), std::make_pair("Planting Color"s, &Settings::ESP::Enemies::bombColorPlanting));
 			UI::Checkbox("Hostage", &Settings::ESP::Enemies::hostage);
 			UI::ColorEdit(std::make_pair("Hostage Color"s, &Settings::ESP::Enemies::hostageColor));
 			UI::Checkbox("Reloading", &Settings::ESP::Enemies::reloading);

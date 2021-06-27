@@ -52,10 +52,13 @@ namespace Enemies
 	extern ImVec4 clanColor;
 	extern bool hp;
 	extern ImVec4 hpColor;
+	extern bool armor;
+	extern ImVec4 armorColor;
 	extern bool kit;
 	extern ImVec4 kitColor;
 	extern bool bomb;
 	extern ImVec4 bombColor;
+	extern ImVec4 bombColorPlanting;
 	extern bool hostage;
 	extern ImVec4 hostageColor;
 	extern bool reloading;
