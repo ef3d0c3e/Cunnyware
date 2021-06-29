@@ -1,4 +1,5 @@
 #include "../Hacks/Visuals.hpp"
+#include "../Hacks/Info.hpp"
 #include "../Util/Draw.hpp"
 #include "../UI/UI.hpp"
 #include "Hooks.hpp"
@@ -18,6 +19,7 @@ void Hooks::Paint(void* thisptr, PaintMode mode)
 
 	engine->GetScreenSize(Paint::engineHeight, Paint::engineWidth);
 
+	PlayerAdditionalInfo::Paint();
 
 	if (mode & PaintMode::UIPANELS)
 	{
@@ -70,7 +72,7 @@ void Hooks::PaintImGui()
 				Draw::ImCircle3D(req.pos, req.segments, req.radius, req.color, req.thickness);
 				break;
 			case DrawType::TEXT:
-				Draw::ImText(rect.x, req.color, req.text, req.flags, 0, nullptr);
+				Draw::ImText(rect.x, req.color, req.text, req.radius, req.flags, 0, nullptr);
 				break;
 		}
 	}

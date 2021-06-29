@@ -228,7 +228,7 @@ void Interface::HookVMTs()
 	modelRenderVMT->HookVM(Hooks::DrawModelExecute, 21);
 	modelRenderVMT->ApplyVMT();
 
-	panelVMT = new VMT(panel);
-	panelVMT->HookVM(Hooks::PaintTraverse, 42);
-	panelVMT->ApplyVMT();
+	//panelVMT = new VMT(panel);
+	//panelVMT->HookVM(Hooks::PaintTraverse, 42);
+	//panelVMT->ApplyVMT();
 }

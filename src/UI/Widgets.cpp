@@ -2963,7 +2963,7 @@ i32 UI::PieMenu(const ImVec2& center, const char* popup_id, const std::vector<st
 	return ret;
 }
 
-Vec2 UI::GetTextSize(const std::string& text, ImFont* font, f32 size)
+Vec2 UI::GetTextSize(const std::string& text, const ImFont* font, f32 size)
 {
 	const f32 fontSize = font->FontSize;
 

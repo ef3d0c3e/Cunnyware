@@ -87,9 +87,14 @@ void Hooker::FindSequenceActivity()
 
 void Hooker::FindPlayerResource()
 {
-	std::uintptr_t instruction_addr = FindPatternInModule("/client_client.so",
+	std::uintptr_t instruction_addr = FindPatternInModule_("/client_client.so",
 			u8"\x48\x8B\x05\x00\x00\x00\x00\x55\x48\x89\xE5\x48\x85\xC0\x74\x10\x48",
 			"xxx????xxxxxxxxxx");
+	cvar->ConsoleDPrintf("instruction_addr1=%p\n", instruction_addr);
+	instruction_addr = FindPatternInModule("/client_client.so",
+			u8"\x48\x8B\x05\x00\x00\x00\x00\x55\x48\x89\xE5\x48\x85\xC0\x74\x10\x48",
+			"xxx????xxxxxxxxxx");
+	cvar->ConsoleDPrintf("instruction_addr2=%p\n", instruction_addr);
 
 	csPlayerResource = reinterpret_cast<C_CSPlayerResource**>(GetAbsoluteAddress(instruction_addr, 3, 7));
 }

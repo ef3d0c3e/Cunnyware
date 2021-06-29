@@ -171,4 +171,5 @@ auto make_array(T&& t, Ts&&... ts)
 
 std::string codepointToUtf8(char32_t codepoint);
 
+uintptr_t FindPatternInModule_(const std::string& moduleName, const std::u8string_view& pattern, const std::string_view& szMask);
 #endif // UTIL_HPP

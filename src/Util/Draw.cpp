@@ -77,7 +77,7 @@ void Draw::AddCircle3D(Vec3 pos3D, f32 radius, ImColor color, u32 segments, f32 
 	drawRequests.push_back(std::move(req));
 }
 
-void Draw::AddText(Vec2i pos, std::string&& text, ImColor color, TextFlags flags)
+void Draw::AddText(Vec2i pos, std::string&& text, ImColor color, TextFlags flags, f32 size)
 {
 	DrawRequest req = {};
 	req.type = DrawType::TEXT;
@@ -85,12 +85,13 @@ void Draw::AddText(Vec2i pos, std::string&& text, ImColor color, TextFlags flags
 	req.color = color;
 	req.text = std::move(text);
 	req.flags = flags;
+	req.radius = size;
 
 	drawRequests.push_back(std::move(req));
 }
 
 
-void Draw::ImText(Vec2 pos, ImColor color, const std::string& text, TextFlags flags, f32 wrap_width, const Vec4* cpu_fine_clip_rect_)
+void Draw::ImText(Vec2 pos, ImColor color, const std::string& text, f32 size, TextFlags flags, f32 wrap_width, const Vec4* cpu_fine_clip_rect_)
 {
 	ImColor shading;
 	shading.Value.x = 0;
@@ -104,26 +105,26 @@ void Draw::ImText(Vec2 pos, ImColor color, const std::string& text, TextFlags fl
 
 	if (flags & TextFlags::Outline)
 	{
-		ImGui::GetWindowDrawList()->AddText(ImGui::GetFont(), ImGui::GetFontSize(), ImVec2(pos.x - 1, pos.y - 1),
+		ImGui::GetWindowDrawList()->AddText(ImGui::GetFont(), size, ImVec2(pos.x - 1, pos.y - 1),
 											shading, text_begin, text_end, wrap_width,
 											cpu_fine_clip_rect);
-		ImGui::GetWindowDrawList()->AddText(ImGui::GetFont(), ImGui::GetFontSize(), ImVec2(pos.x + 2, pos.y),
+		ImGui::GetWindowDrawList()->AddText(ImGui::GetFont(), size, ImVec2(pos.x + 2, pos.y),
 											shading, text_begin, text_end, wrap_width,
 											cpu_fine_clip_rect);
-		ImGui::GetWindowDrawList()->AddText(ImGui::GetFont(), ImGui::GetFontSize(), ImVec2(pos.x, pos.y + 2),
+		ImGui::GetWindowDrawList()->AddText(ImGui::GetFont(), size, ImVec2(pos.x, pos.y + 2),
 											shading, text_begin, text_end, wrap_width,
 											cpu_fine_clip_rect);
-		ImGui::GetWindowDrawList()->AddText(ImGui::GetFont(), ImGui::GetFontSize(), ImVec2(pos.x - 2, pos.y),
+		ImGui::GetWindowDrawList()->AddText(ImGui::GetFont(), size, ImVec2(pos.x - 2, pos.y),
 											shading, text_begin, text_end, wrap_width,
 											cpu_fine_clip_rect);
 	}
 
 	if (flags & TextFlags::Shadow)
-		ImGui::GetWindowDrawList()->AddText(ImGui::GetFont(), ImGui::GetFontSize(), ImVec2(pos.x + 1, pos.y + 1),
+		ImGui::GetWindowDrawList()->AddText(ImGui::GetFont(), size, ImVec2(pos.x + 1, pos.y + 1),
 											shading, text_begin, text_end, wrap_width,
 											cpu_fine_clip_rect);
 
-	ImGui::GetWindowDrawList()->AddText(ImGui::GetFont(), ImGui::GetFontSize(), {pos.x, pos.y}, color, text_begin, text_end,
+	ImGui::GetWindowDrawList()->AddText(ImGui::GetFont(), size, {pos.x, pos.y}, color, text_begin, text_end,
 										wrap_width, cpu_fine_clip_rect);
 }
 

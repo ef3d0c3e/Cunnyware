@@ -11,6 +11,7 @@
 #include "../SDK/StudioHdr.hpp"
 #include "../UI/Widgets.hpp"
 #include "../UI/UI.hpp"
+#include "Info.hpp"
 #include "Util.hpp"
 #include <sstream>
 
@@ -97,6 +98,14 @@ bool ESP::WorldToScreen(const Vec3& origin, Vec2& screen)
 	screen *= screenResFactor;
 
 	return true;
+}
+
+f32 GetFontSize(C_BaseEntity* ent, C_BasePlayer* lp)
+{
+	//const f32 dist = (ent->GetVecOrigin() - lp->GetVecOrigin()).Length();
+	// TODO: this scaling looks very bad, maybe select accurate font in draw::imtext
+	
+	return 18;
 }
 
 bool GetBox(C_BaseEntity* ent, Rect2& box)
@@ -295,6 +304,8 @@ void DrawEnemy(C_BasePlayer* p, C_BasePlayer* lp)
 
 	bool visible = Util::IsVisible(p, Bones::HEAD, 180.f, false);
 
+	const f32 fontSize = GetFontSize(p, lp);
+
 	if (visible)
 	{
 		DrawBox(box, p, Settings::ESP::Enemies::boxColorVisible, Settings::ESP::Enemies::box);
@@ -319,12 +330,13 @@ void DrawEnemy(C_BasePlayer* p, C_BasePlayer* lp)
 	if (Settings::ESP::Enemies::name)
 	{
 		std::string name(info.name.data());
-		const Vec2 nameSz = UI::GetTextSize(name, UI::espfont, 18);
+		name += " " + std::to_string(p->GetIndex());
+		const Vec2 nameSz = UI::GetTextSize(name, UI::espfont, fontSize);
 
 		const i32 x = (i32)box.x.x + ((i32)(box.y.x - nameSz.x) >> 1);
-		Draw::AddRectFilled(Rect2i{Vec2i{x - 4, box.x.y - 20}, Vec2i{x + nameSz.x + 4, box.x.y - 20 + nameSz.y}}, ImColor(0.f, 0.f, 0.f, .6f*Settings::ESP::Enemies::nameColor.w));
-		Draw::AddRectFilled(Rect2i{Vec2i{x - 4, box.x.y - 20}, Vec2i{x + nameSz.x + 4, box.x.y - 20 + 3}}, Settings::ESP::Enemies::nameColor);
-		Draw::AddText(Vec2i{x, box.x.y - 18}, std::move(name), Settings::ESP::Enemies::nameColor, TextFlags::Shadow);
+		Draw::AddRectFilled(Rect2i{Vec2i{x - 4, box.x.y - fontSize - 2}, Vec2i{x + nameSz.x + 4, box.x.y - 20 + nameSz.y}}, ImColor(0.f, 0.f, 0.f, .6f*Settings::ESP::Enemies::nameColor.w));
+		Draw::AddRectFilled(Rect2i{Vec2i{x - 4, box.x.y - fontSize - 2}, Vec2i{x + nameSz.x + 4, box.x.y - 20 + 3}}, Settings::ESP::Enemies::nameColor);
+		Draw::AddText(Vec2i{x, box.x.y - fontSize}, std::move(name), Settings::ESP::Enemies::nameColor, TextFlags::Shadow, fontSize);
 	}
 	if (Settings::ESP::Enemies::clan)
 	{
@@ -338,14 +350,16 @@ void DrawEnemy(C_BasePlayer* p, C_BasePlayer* lp)
 		if (Settings::ESP::Enemies::currentWeapon)
 		{
 			C_BaseCombatWeapon* weapon = reinterpret_cast<C_BaseCombatWeapon*>(entityList->GetClientEntityFromHandle(p->GetActiveWeapon()));
+			if (weapon)
+			{
+				std::string name = codepointToUtf8(0xE000 + static_cast<i16>(*weapon->GetItemDefinitionIndex()));
 
-			std::string name = codepointToUtf8(0xE000 + *weapon->GetItemDefinitionIndex());
+				const Vec2 nameSz = UI::GetTextSize(name, UI::espfont, fontSize);
+				const i32 x = (i32)box.x.x + ((i32)(box.y.x - nameSz.x) >> 1);
+				Draw::AddText(Vec2i{x, bottom}, std::move(name), Settings::ESP::Enemies::currentWeaponColor, TextFlags::Shadow, fontSize);
 
-			const Vec2 nameSz = UI::GetTextSize(name, UI::espfont, 18);
-			const i32 x = (i32)box.x.x + ((i32)(box.y.x - nameSz.x) >> 1);
-			Draw::AddText(Vec2i{x, bottom}, std::move(name), Settings::ESP::Enemies::currentWeaponColor, TextFlags::Shadow);
-			
-			bottom += 18;
+				bottom += fontSize;
+			}
 		}
 		//}}}
 		//{{{ Other weapons
@@ -362,21 +376,21 @@ void DrawEnemy(C_BasePlayer* p, C_BasePlayer* lp)
 					break;
 				if (weapons[i].index == activeWeapon.index)
 					continue;
-				C_BaseCombatWeapon* weapon = reinterpret_cast<C_BaseCombatWeapon*>(entityList->GetClientEntity( weapons[i].index & 0xFFF ));
+				C_BaseCombatWeapon* weapon = reinterpret_cast<C_BaseCombatWeapon*>(entityList->GetClientEntity(weapons[i].index & 0xFFF));
 				if (weapon == nullptr || !Util::IsOtherWeapon(weapon->GetCSWpnData()->GetWeaponType()))
 					continue;
 				if (first)
-					first = false, name += " " + codepointToUtf8(0xE000 + *weapon->GetItemDefinitionIndex());
+					first = false, name += " " + codepointToUtf8(0xE000 + static_cast<i16>(*weapon->GetItemDefinitionIndex()));
 				else
-					name += codepointToUtf8(0xE000 + *weapon->GetItemDefinitionIndex());
+					name += codepointToUtf8(0xE000 + static_cast<i16>(*weapon->GetItemDefinitionIndex()));
 			}
 
 
-			const Vec2 nameSz = UI::GetTextSize(name, UI::espfont, 18);
+			const Vec2 nameSz = UI::GetTextSize(name, UI::espfont, fontSize);
 			const i32 x = (i32)box.x.x + ((i32)(box.y.x - nameSz.x) >> 1);
-			Draw::AddText(Vec2i{x, bottom}, std::move(name), Settings::ESP::Enemies::otherWeaponColor, TextFlags::Shadow);
+			Draw::AddText(Vec2i{x, bottom}, std::move(name), Settings::ESP::Enemies::otherWeaponColor, TextFlags::Shadow, fontSize);
 			
-			bottom += 18;
+			bottom += fontSize;
 		}//}}}
 		//{{{ Grenades
 		if (Settings::ESP::Enemies::grenades)
@@ -396,17 +410,17 @@ void DrawEnemy(C_BasePlayer* p, C_BasePlayer* lp)
 				if (weapon == nullptr || !Util::IsGrenade(weapon->GetCSWpnData()->GetWeaponType()))
 					continue;
 				if (first)
-					first = false, name += " " + codepointToUtf8(0xE000 + *weapon->GetItemDefinitionIndex());
+					first = false, name += " " + codepointToUtf8(0xE000 + static_cast<i16>(*weapon->GetItemDefinitionIndex()));
 				else
-					name += codepointToUtf8(0xE000 + *weapon->GetItemDefinitionIndex());
+					name += codepointToUtf8(0xE000 + static_cast<i16>(*weapon->GetItemDefinitionIndex()));
 			}
 
 
-			const Vec2 nameSz = UI::GetTextSize(name, UI::espfont, 18);
+			const Vec2 nameSz = UI::GetTextSize(name, UI::espfont, fontSize);
 			const i32 x = (i32)box.x.x + ((i32)(box.y.x - nameSz.x) >> 1);
-			Draw::AddText(Vec2i{x, bottom}, std::move(name), Settings::ESP::Enemies::grenadesColor, TextFlags::Shadow);
+			Draw::AddText(Vec2i{x, bottom}, std::move(name), Settings::ESP::Enemies::grenadesColor, TextFlags::Shadow, fontSize);
 			
-			bottom += 18;
+			bottom += fontSize;
 		}//}}}
 	}
 	//}}}
@@ -415,27 +429,34 @@ void DrawEnemy(C_BasePlayer* p, C_BasePlayer* lp)
 		Vec2 right{box.x.x + box.y.x + 2, box.x.y};
 		if (Settings::ESP::Enemies::kit && p->HasDefuser())
 		{
-			Draw::AddText(Vec2i{right.x, right.y}, "\ue066"s, Settings::ESP::Enemies::kitColor, TextFlags::Shadow);
-			right.y += 18;
-		}
-		if (Settings::ESP::Enemies::bomb)
-		{
-			Draw::AddText(Vec2i{right.x, right.y}, "\ue031"s, Settings::ESP::Enemies::bombColor, TextFlags::Shadow);
-			//Draw::AddText(Vec2i{right.x, right.y}, "\ue031 Planting"s, Settings::ESP::Enemies::bombColorPlanting, TextFlags::Shadow);
-			right.y += 18;
+			Draw::AddText(Vec2i{right.x, right.y}, "\ue066"s, Settings::ESP::Enemies::kitColor, TextFlags::Shadow, fontSize);
+			right.y += fontSize;
 		}
 		if (Settings::ESP::Enemies::armor)
 		{
 			if (p->HasHelmet())
 			{
-				Draw::AddText(Vec2i{right.x, right.y}, "\ue065"s, Settings::ESP::Enemies::armorColor, TextFlags::Shadow);
-				right.y += 18;
+				Draw::AddText(Vec2i{right.x, right.y}, fmt::format("\ue065 {}"s, p->GetArmor()), Settings::ESP::Enemies::armorColor, TextFlags::Shadow, fontSize);
+				right.y += fontSize;
 			}
 			else if (p->GetArmor() > 0)
 			{
-				Draw::AddText(Vec2i{right.x, right.y}, "\ue064"s, Settings::ESP::Enemies::armorColor, TextFlags::Shadow);
-				right.y += 18;
+				Draw::AddText(Vec2i{right.x, right.y}, fmt::format("\ue064 {}"s, p->GetArmor()), Settings::ESP::Enemies::armorColor, TextFlags::Shadow, fontSize);
+				right.y += fontSize;
 			}
+		}
+		if (Settings::ESP::Enemies::bomb && p->GetIndex() == (*csPlayerResource)->GetPlayerC4())
+		{
+			if (Util::IsPlanting(p))
+				Draw::AddText(Vec2i{right.x, right.y}, "\ue031 Planting"s, Settings::ESP::Enemies::bombColorPlanting, TextFlags::Shadow, fontSize);
+			else
+				Draw::AddText(Vec2i{right.x, right.y}, "\ue031"s, Settings::ESP::Enemies::bombColor, TextFlags::Shadow, fontSize);
+			right.y += fontSize;
+		}
+		if (Settings::ESP::Enemies::dormant && p->IsDormant())
+		{
+			Draw::AddText(Vec2i{right.x, right.y}, fmt::format("\ue067 {}ms"s, PlayerAdditionalInfo::DormantTime(p)), Settings::ESP::Enemies::dormantColor, TextFlags::Shadow, fontSize);
+			right.y += fontSize;
 		}
 	}
 	// }}}
@@ -465,7 +486,7 @@ void ESP::Paint()
 		if (client->classID == EClassIds::CCSPlayer)
 		{
 			auto p = reinterpret_cast<C_BasePlayer*>(ent);
-			if (!p->GetAlive())
+			if (!p->GetAlive() || !PlayerAdditionalInfo::ShouldDraw(p))
 				continue;
 
 			if (p->GetTeam() != lp->GetTeam() && Settings::ESP::Enemies::enabled)

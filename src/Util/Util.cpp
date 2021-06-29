@@ -95,19 +95,19 @@ std::pair<std::uintptr_t, std::size_t> GetLibraryInformation(const std::string& 
 
 inline bool Compare(const u8* data, const std::u8string_view& pattern, const std::string_view& mask)
 {
-	for (std::size_t i = 0; i < pattern.size(); ++i)
+	std::size_t i;
+	for (i = 0; i < mask.size(); ++i)
 		if (mask[i] == 'x' && pattern[i] != data[i])
 			return false;
 
-	return true;
+	return i == mask.size();
 }
 
 std::uintptr_t FindPattern(std::uintptr_t address, std::size_t size, const std::u8string_view& pattern, const std::string_view& mask)
 {
-	for (std::size_t i = 0; i < size; i++)
+	for (std::uintptr_t i = 0; i < size; i++)
 		if (Compare(reinterpret_cast<const u8*>(address + i), pattern, mask))
-			return address + i;
-
+			return (std::uintptr_t)(address + i);
 	return 0;
 }
 
@@ -133,9 +133,47 @@ std::string codepointToUtf8(char32_t codepoint)
 		std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> convert;
 		return convert.to_bytes(&codepoint, &codepoint+1);
 	}
-	catch (std::range_error& e)
+	catch (...)
 	{
 		return "RANGE_ERROR";
 	}
 }
 
+inline bool Compare_(const u8* pData, const std::u8string_view& pattern, const std::string_view& szMask)
+{
+
+	/*for (; *szMask; ++szMask, ++pData, ++bMask)
+		if (*szMask == 'x' && *pData != *bMask)
+			return false;
+
+	return (*szMask) == 0;
+	*/
+
+	std::size_t i;
+	for (i = 0; i < szMask.size(); ++i)
+		if (szMask[i] == 'x' && pattern[i] != pData[i])
+			return false;
+
+	return i == szMask.size();
+}
+
+std::uintptr_t FindPattern_(std::uintptr_t dwAddress, std::size_t dwLen, const std::u8string_view& pattern, const std::string_view& szMask)
+{
+	for (uintptr_t i = 0; i < dwLen; i++)
+		if (Compare_((u8*)(dwAddress + i), pattern, szMask))
+			return (std::uintptr_t)(dwAddress + i);
+
+	return 0;
+}
+
+uintptr_t FindPatternInModule_(const std::string& moduleName, const std::u8string_view& pattern, const std::string_view& szMask)
+{
+	std::uintptr_t base;
+	std::size_t size;
+
+	if (std::tie(base, size) = GetLibraryInformation(moduleName); base == 0)
+		throw Exception("FindPatternInModule({}, ...) could not get library information", moduleName);
+
+	uintptr_t ret = FindPattern_(base, size, pattern, szMask);
+	return ret;
+}

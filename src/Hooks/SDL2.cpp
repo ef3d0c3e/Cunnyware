@@ -229,8 +229,8 @@ static void SwapWindow(SDL_Window* window)
 		ImGuiFreeType::BuildFontAtlas(io.Fonts, SDL2::fontFlags);
 		SDL2::wantRebuild = false;
 		
-ImGui_ImplOpenGL3_DestroyDeviceObjects();
-ImGui_ImplOpenGL3_CreateDeviceObjects();
+		ImGui_ImplOpenGL3_DestroyDeviceObjects();
+		ImGui_ImplOpenGL3_CreateDeviceObjects();
 	}
 
 	ImGui_ImplOpenGL3_NewFrame();

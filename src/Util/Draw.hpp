@@ -44,9 +44,9 @@ void AddRectFilled(Rect2i rect, ImColor color, f32 rounding = 0.f, i32 flags = 0
 void AddCircle(Vec2i center, f32 radius, ImColor color, u32 segments, f32 thickness);
 void AddCircleFilled(Vec2i center, f32 radius, ImColor color, u32 segments);
 void AddCircle3D(Vec3 pos, f32 radius, ImColor color, u32 segments, f32 thickness = 1.0f);
-void AddText(Vec2i pos, std::string&& text, ImColor color, TextFlags flags);
+void AddText(Vec2i pos, std::string&& text, ImColor color, TextFlags flags, f32 size);
 
-void ImText(Vec2 pos, ImColor color, const std::string& text, TextFlags flags, f32 wrap_width, const Vec4* cpu_fine_clip_rect);
+void ImText(Vec2 pos, ImColor color, const std::string& text, f32 size, TextFlags flags, f32 wrap_width, const Vec4* cpu_fine_clip_rect);
 void ImCircle(Vec2 point, ImColor color, f32 radius, u32 num_segments, f32 thickness);
 void ImCircleFilled(Vec2 point, ImColor color, f32 radius, u32 num_segments);
 void ImRect(Rect2 rect, ImColor color, f32 rounding, i32 rounding_corners_flags, f32 thickness);
