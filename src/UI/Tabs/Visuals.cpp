@@ -57,7 +57,7 @@ static void ESPLeft()
 				UI::ColorEdit(std::make_pair("Healt Bar Color"s, &Settings::ESP::Enemies::healthBarColor));
 
 				UI::Checkbox("Ammo bar", &Settings::ESP::Enemies::ammoBar);
-				UI::ColorEdit(std::make_pair("Ammo Bar Color"s, &Settings::ESP::Enemies::ammoBarColor));
+				UI::ColorEdit(std::make_pair("Ammo Bar Reloading Color"s, &Settings::ESP::Enemies::ammoBarReloadingColor), std::make_pair("Ammo Bar Color"s, &Settings::ESP::Enemies::ammoBarColor));
 			}
 			ImGui::NextColumn();
 			{
@@ -117,13 +117,11 @@ static void ESPRight()
 			UI::Checkbox("Armor", &Settings::ESP::Enemies::armor);
 			UI::ColorEdit(std::make_pair("Armor Color"s, &Settings::ESP::Enemies::armorColor));
 			UI::Checkbox("Defuse kit", &Settings::ESP::Enemies::kit);
-			UI::ColorEdit(std::make_pair("Defuse Kit Color"s, &Settings::ESP::Enemies::kitColor));
+			UI::ColorEdit(std::make_pair("Defusing Color"s, &Settings::ESP::Enemies::kitDefusingColor), std::make_pair("Defuse Kit Color"s, &Settings::ESP::Enemies::kitColor));
 			UI::Checkbox("Bomb", &Settings::ESP::Enemies::bomb);
-			UI::ColorEdit(std::make_pair("Bomb Color"s, &Settings::ESP::Enemies::bombColor), std::make_pair("Planting Color"s, &Settings::ESP::Enemies::bombColorPlanting));
+			UI::ColorEdit(std::make_pair("Planting Color"s, &Settings::ESP::Enemies::bombColorPlanting), std::make_pair("Bomb Color"s, &Settings::ESP::Enemies::bombColor));
 			UI::Checkbox("Hostage", &Settings::ESP::Enemies::hostage);
-			UI::ColorEdit(std::make_pair("Hostage Color"s, &Settings::ESP::Enemies::hostageColor));
-			UI::Checkbox("Reloading", &Settings::ESP::Enemies::reloading);
-			UI::ColorEdit(std::make_pair("Reloading Color"s, &Settings::ESP::Enemies::reloadingColor));
+			UI::ColorEdit(std::make_pair("Grabbing Hostage Color"s, &Settings::ESP::Enemies::hostageGrabbingColor), std::make_pair("Hostage Color"s, &Settings::ESP::Enemies::hostageColor));
 			UI::Checkbox("Scoped", &Settings::ESP::Enemies::scoped);
 			UI::ColorEdit(std::make_pair("Scoped Color"s, &Settings::ESP::Enemies::scopedColor));
 			UI::Checkbox("Dormant", &Settings::ESP::Enemies::dormant);

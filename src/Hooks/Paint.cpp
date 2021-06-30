@@ -29,12 +29,12 @@ void Hooks::Paint(void* thisptr, PaintMode mode)
 			first = false;
 			return;
 		}
+		std::unique_lock<std::mutex> lock(drawMutex);
 
 		u64 prevRecords = Draw::drawRequests.size();
 
 		ESP::Paint();
 
-		std::unique_lock<std::mutex> lock(drawMutex);
 		Draw::drawRequests.erase(Draw::drawRequests.begin(), Draw::drawRequests.begin() + prevRecords);
 	}
 }

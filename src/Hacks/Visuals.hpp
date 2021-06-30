@@ -37,6 +37,7 @@ namespace Enemies
 	extern bool healthBarHealthBasedColor;
 	extern bool ammoBar;
 	extern ImVec4 ammoBarColor;
+	extern ImVec4 ammoBarReloadingColor;
 
 	extern bool currentWeapon;
 	extern ImVec4 currentWeaponColor;
@@ -56,13 +57,13 @@ namespace Enemies
 	extern ImVec4 armorColor;
 	extern bool kit;
 	extern ImVec4 kitColor;
+	extern ImVec4 kitDefusingColor;
 	extern bool bomb;
 	extern ImVec4 bombColor;
 	extern ImVec4 bombColorPlanting;
 	extern bool hostage;
 	extern ImVec4 hostageColor;
-	extern bool reloading;
-	extern ImVec4 reloadingColor;
+	extern ImVec4 hostageGrabbingColor;
 	extern bool scoped;
 	extern ImVec4 scopedColor;
 	extern bool dormant;

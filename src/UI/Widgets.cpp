@@ -527,7 +527,8 @@ bool UI::Button2(const char* label, const ImVec2& size_arg)
 	if ((flags & ImGuiButtonFlags_AlignTextBaseLine) && style.FramePadding.y < window->DC.CurrentLineTextBaseOffset) // Try to vertically align buttons that are smaller/have no padding so that text baseline matches (bit hacky, since it shouldn't be a flag)
 		pos.y += window->DC.CurrentLineTextBaseOffset - style.FramePadding.y;
 	ImVec2 size = ImGui::CalcItemSize(size_arg, label_size.x + style.FramePadding.x * 2.0f + label_size.y * 6, label_size.y + style.FramePadding.y * 2.0f);
-	size.y *= 1.2;
+	size.y = (i32)(size.y * 1.2);
+	
 
 	const ImRect bb(pos, pos + size);
 	ImGui::ItemSize(bb, style.FramePadding.y);
@@ -542,10 +543,12 @@ bool UI::Button2(const char* label, const ImVec2& size_arg)
 		ImGui::MarkItemValueChanged(id);
 
 	// Render
-	const ImU32 col = (held && hovered) ? Settings::Style::button2_bg[2] : hovered ? Settings::Style::button2_bg[1] :
-																					  Settings::Style::button2_bg[0];
+	const ImU32 col =
+		(held && hovered) ? Settings::Style::button2_bg[2] : hovered
+		? Settings::Style::button2_bg[1] : Settings::Style::button2_bg[0];
 	ImGui::RenderNavHighlight(bb, id);
 	RenderFrame(bb.Min, bb.Max, col, 1.f, 0.f, Settings::Style::button2_border);
+	window->DrawList->AddRect(bb.Min + ImVec2(1, 1), bb.Max - ImVec2(1, 1), Settings::Style::button2_border_accent, 0);
 	ImGui::PushStyleColor(ImGuiCol_Text, Settings::Style::button2_text);
 	ImGui::PushFont(UI::plex_bold);
 	UI::RenderTextClipped(bb.Min + style.FramePadding, bb.Max - style.FramePadding, label, NULL, &label_size, style.ButtonTextAlign, &bb);

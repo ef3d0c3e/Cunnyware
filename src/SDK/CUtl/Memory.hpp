@@ -24,6 +24,11 @@ public:
 			return index != it.index;
 		}
 	};
+
+	[[nodiscard]] const T& operator[](I i) const noexcept
+	{ return memory[i]; }
+	[[nodiscard]] T& operator[](I i) noexcept
+	{ return memory[i]; }
 protected:
 	MAKE_CENUM_Q(External, i32,
 		BUFFER_MARKER, -1,

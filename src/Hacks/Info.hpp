@@ -7,6 +7,7 @@ class PlayerAdditionalInfo
 {
 	bool dormant; ///< Is dormant
 	u32 dormantTime; ///< (ms) Since dormant state
+	bool visible; ///< Is playerr visible
 
 	// ...store bt info
 	
@@ -15,7 +16,9 @@ public:
 	~PlayerAdditionalInfo();
 
 	static bool ShouldDraw(const class C_BasePlayer* player);
+	static bool IsDormant(const class C_BasePlayer* player);
 	static u32 DormantTime(const class C_BasePlayer* player);
+	static bool IsVisible(const class C_BasePlayer* player);
 
 	static void NewRound(); // Call at begining of every round
 	static void Paint(); // Call every frame before everything else

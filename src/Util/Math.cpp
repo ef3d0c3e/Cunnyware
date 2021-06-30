@@ -87,7 +87,7 @@ void Math::AngleVectors(const QAngle& angles, Vec3* forward, Vec3* right, Vec3* 
 
 Vec3 Math::AngleForward(const QAngle& angles) noexcept
 {
-	const f32 sp = sin(angles.pitch), sy = sin(angles.yaw), cp = cos(angles.pitch), cy = cos(angles.yaw);
+	const f32 sp = sin(angles.pitch*Deg2Rad), sy = sin(angles.yaw*Deg2Rad), cp = cos(angles.pitch*Deg2Rad), cy = cos(angles.yaw*Deg2Rad);
 
 	return Vec3{cp * cy, cp * sy, -sp};
 }

@@ -41,6 +41,7 @@ namespace Settings::Style
 	extern ImU32 button_text;
 	extern ImU32 button_bg[3]; // normal, hovered, active
 	extern ImU32 button2_border;
+	extern ImU32 button2_border_accent;
 	extern ImU32 button2_text;
 	extern ImU32 button2_bg[3]; // normal, hovered, active
 

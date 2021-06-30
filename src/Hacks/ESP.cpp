@@ -32,6 +32,7 @@ EXPORT(ImVec4, Settings::ESP::Enemies::healthBarColor) = ImVec4(.27f, .71f, .26f
 EXPORT(bool, Settings::ESP::Enemies::healthBarHealthBasedColor) = false;
 EXPORT(bool, Settings::ESP::Enemies::ammoBar) = true;
 EXPORT(ImVec4, Settings::ESP::Enemies::ammoBarColor) = ImVec4(.33f, .53f, .81f, 1.f);
+EXPORT(ImVec4, Settings::ESP::Enemies::ammoBarReloadingColor) = ImVec4(.73f, .53f, .81f, 1.f);
 EXPORT(bool, Settings::ESP::Enemies::currentWeapon) = true;
 EXPORT(ImVec4, Settings::ESP::Enemies::currentWeaponColor) = ImVec4(.60f, .73f, .90f, 1.f);
 EXPORT(bool, Settings::ESP::Enemies::otherWeapon) = false;
@@ -48,13 +49,13 @@ EXPORT(bool, Settings::ESP::Enemies::armor) = true;
 EXPORT(ImVec4, Settings::ESP::Enemies::armorColor) = ImVec4(.82f, .82f, .82f, 1.f);
 EXPORT(bool, Settings::ESP::Enemies::kit) = false;
 EXPORT(ImVec4, Settings::ESP::Enemies::kitColor) = ImVec4(.18f, .65f, .98f, 1.f);
+EXPORT(ImVec4, Settings::ESP::Enemies::kitDefusingColor) = ImVec4(.28f, .45f, .98f, 1.f);
 EXPORT(bool, Settings::ESP::Enemies::bomb) = false;
 EXPORT(ImVec4, Settings::ESP::Enemies::bombColor) = ImVec4(.18f, .65f, .98f, 1.f);
 EXPORT(ImVec4, Settings::ESP::Enemies::bombColorPlanting) = ImVec4(.48f, .65f, .88f, 1.f);
 EXPORT(bool, Settings::ESP::Enemies::hostage) = false;
 EXPORT(ImVec4, Settings::ESP::Enemies::hostageColor) = ImVec4(.88f, .52f, .06f, 1.f);
-EXPORT(bool, Settings::ESP::Enemies::reloading) = true;
-EXPORT(ImVec4, Settings::ESP::Enemies::reloadingColor) = ImVec4(.17f, .44f, .76f, 1.f);
+EXPORT(ImVec4, Settings::ESP::Enemies::hostageGrabbingColor) = ImVec4(.98f, .52f, .06f, 1.f);
 EXPORT(bool, Settings::ESP::Enemies::scoped) = true;
 EXPORT(ImVec4, Settings::ESP::Enemies::scopedColor) = ImVec4(.17f, .44f, .76f, 1.f);
 EXPORT(bool, Settings::ESP::Enemies::dormant) = false;
@@ -75,6 +76,37 @@ bool ESP::WorldToScreen(const Vec3& origin, Vec2& screen)
 
 	if ( w < 0.01f ) // Is Not in front of our player
 		return false;
+
+	f32 width = (float)Paint::engineWidth;
+	f32 height = (float)Paint::engineHeight;
+
+	f32 halfWidth = width / 2;
+	f32 halfHeight = height / 2;
+
+	f32 inverseW = 1 / w;
+
+	screen.x = halfWidth +
+				(0.5f * ((vMatrix[0][0] * origin.x +
+						  vMatrix[0][1] * origin.y +
+						  vMatrix[0][2] * origin.z +
+						  vMatrix[0][3]) * inverseW) * width + 0.5f);
+
+	screen.y = halfHeight -
+				(0.5f * ((vMatrix[1][0] * origin.x +
+						  vMatrix[1][1] * origin.y +
+						  vMatrix[1][2] * origin.z +
+						  vMatrix[1][3]) * inverseW) * height + 0.5f);
+	screen *= screenResFactor;
+
+	return true;
+}
+
+bool WorldToScreen2(const Vec3& origin, Vec2& screen)
+{
+	f32 w = vMatrix[3][0] * origin.x
+		  + vMatrix[3][1] * origin.y
+		  + vMatrix[3][2] * origin.z
+		  + vMatrix[3][3];
 
 	f32 width = (float)Paint::engineWidth;
 	f32 height = (float)Paint::engineHeight;
@@ -266,11 +298,11 @@ void DrawSkeleton(C_BasePlayer* player, ImColor color)
 
 void DrawBarrel(C_BasePlayer* p, ImColor color, f32 length)
 {
-	Vec3 start;
+	Vec2 start;
 	const Vec3 head = p->GetBonePosition(Bones::HEAD);
-	debugOverlay->ScreenPosition(head, start);
-	Vec3 end;
-	debugOverlay->ScreenPosition(head + Math::AngleForward(*p->GetEyeAngles())*length, end);
+	WorldToScreen2(head, start);
+	Vec2 end;
+	WorldToScreen2(head + Math::AngleForward(*p->GetEyeAngles())*length, end);
 
 	Draw::AddLine(Rect2i{start.As<i32, 2>(), end.As<i32, 2>()}, ImColor(0.f, 0.f, 0.f, 0.5f*color.Value.w), 3.f);
 	Draw::AddLine(Rect2i{start.As<i32, 2>(), end.As<i32, 2>()}, color, 1.f);
@@ -288,9 +320,43 @@ void DrawHealthBar(const Rect2& box, C_BasePlayer* p, ImColor color, bool health
 	}
 	else
 	{
-		Draw::AddRectFilled(Rect2i{Vec2i{(i32)box.x.x - 6, (i32)box.x.y}, Vec2i{(i32)box.x.x - 2, (i32)(box.x.y + box.y.y)}}, ImColor(0.f, 0.f, 0.f, color.Value.w*0.5f));
+		Draw::AddRectFilled(Rect2i{Vec2i{(i32)box.x.x - 6, (i32)box.x.y}, Vec2i{(i32)box.x.x - 2, (i32)(box.x.y + box.y.y)}}, ImColor(0.f, 0.f, 0.f, color.Value.w*.5f));
 		Draw::AddRectFilled(Rect2i{Vec2i{(i32)box.x.x - 5, (i32)box.x.y+1 + (i32)(box.y.y*f)}, Vec2i{(i32)box.x.x - 3, (i32)(box.x.y + box.y.y)-1}}, color);
 	}
+}
+
+bool DrawAmmoBar(const Rect2& box, C_BasePlayer* p, ImColor ammo, ImColor reloading)
+{
+	bool isReloading = false;
+	auto weapon = entityList->GetClientEntityFromHandle(p->GetActiveWeapon());
+	if (!weapon)
+		return false;
+
+	CUtlVector<AnimationLayer>* layers = p->GetAnimOverlay();
+	/*
+	for (i32 i = 0; i <= layers->Size(); ++i)
+	{
+		if (p->GetSequenceActivity(layers->operator[](i).sequence) != static_cast<i32>(CCSGOAnimStatePoses::ACT_CSGO_RELOAD) ||
+			layers->operator[](i).weight == 0.f)
+			continue;
+
+		isReloading = true;
+		break;
+	}
+	*/
+
+	if (isReloading)
+	{
+	}
+	else
+	{
+		const i32 current  = reinterpret_cast<C_BaseCombatWeapon*>(weapon)->GetAmmo();
+		const i32 clipSize = reinterpret_cast<C_BaseCombatWeapon*>(weapon)->GetCSWpnData()->GetClipSize();
+		Draw::AddRectFilled(Rect2i{Vec2i{box.x.x, box.x.y + box.y.y + 2}, Vec2i{box.x.x + box.y.x, box.x.y + box.y.y + 6}}, ImColor(0.f, 0.f, 0.f, ammo.Value.w*.5f));
+		Draw::AddRectFilled(Rect2i{Vec2i{box.x.x + 1, box.x.y + box.y.y + 3}, Vec2i{box.x.x + (box.y.x - 1)*((f32)current / clipSize), box.x.y + box.y.y + 5}}, ammo);
+	}
+
+	return true;
 }
 
 void DrawEnemy(C_BasePlayer* p, C_BasePlayer* lp)
@@ -302,11 +368,9 @@ void DrawEnemy(C_BasePlayer* p, C_BasePlayer* lp)
 	if (!GetBox(p, box))
 		return;
 
-	bool visible = Util::IsVisible(p, Bones::HEAD, 180.f, false);
-
 	const f32 fontSize = GetFontSize(p, lp);
 
-	if (visible)
+	if (PlayerAdditionalInfo::IsVisible(p))
 	{
 		DrawBox(box, p, Settings::ESP::Enemies::boxColorVisible, Settings::ESP::Enemies::box);
 		if (Settings::ESP::Enemies::skeleton)
@@ -327,26 +391,44 @@ void DrawEnemy(C_BasePlayer* p, C_BasePlayer* lp)
 	
 	//{{{ Top
 	// Informations
+	f32 top = box.x.y;
+	if (Settings::ESP::Enemies::clan)
+	{
+		std::string clan((*csPlayerResource)->GetClan(p->GetIndex()));
+		if (!clan.empty())
+		{
+			top -= fontSize + 2;
+			const Vec2 clanSz = UI::GetTextSize(clan, UI::espfont, fontSize);
+
+			const i32 x = (i32)box.x.x + ((i32)(box.y.x - clanSz.x) >> 1);
+			Draw::AddRectFilled(Rect2i{Vec2i{x - 4, top}, Vec2i{x + clanSz.x + 4, top + clanSz.y}}, ImColor(0.f, 0.f, 0.f, .6f*Settings::ESP::Enemies::clanColor.w));
+			Draw::AddRectFilled(Rect2i{Vec2i{x - 4, top}, Vec2i{x + clanSz.x + 4, top + 3}}, Settings::ESP::Enemies::clanColor);
+			Draw::AddText(Vec2i{x, top + 2}, std::move(clan), Settings::ESP::Enemies::clanColor, TextFlags::Shadow, fontSize);
+		}
+	}
 	if (Settings::ESP::Enemies::name)
 	{
+		top -= fontSize + 2;
 		std::string name(info.name.data());
-		name += " " + std::to_string(p->GetIndex());
 		const Vec2 nameSz = UI::GetTextSize(name, UI::espfont, fontSize);
 
 		const i32 x = (i32)box.x.x + ((i32)(box.y.x - nameSz.x) >> 1);
-		Draw::AddRectFilled(Rect2i{Vec2i{x - 4, box.x.y - fontSize - 2}, Vec2i{x + nameSz.x + 4, box.x.y - 20 + nameSz.y}}, ImColor(0.f, 0.f, 0.f, .6f*Settings::ESP::Enemies::nameColor.w));
-		Draw::AddRectFilled(Rect2i{Vec2i{x - 4, box.x.y - fontSize - 2}, Vec2i{x + nameSz.x + 4, box.x.y - 20 + 3}}, Settings::ESP::Enemies::nameColor);
-		Draw::AddText(Vec2i{x, box.x.y - fontSize}, std::move(name), Settings::ESP::Enemies::nameColor, TextFlags::Shadow, fontSize);
-	}
-	if (Settings::ESP::Enemies::clan)
-	{
-		// TODO...
+		Draw::AddRectFilled(Rect2i{Vec2i{x - 4, top}, Vec2i{x + nameSz.x + 4, top + nameSz.y}}, ImColor(0.f, 0.f, 0.f, .6f*Settings::ESP::Enemies::nameColor.w));
+		Draw::AddRectFilled(Rect2i{Vec2i{x - 4, top}, Vec2i{x + nameSz.x + 4, top + 3}}, Settings::ESP::Enemies::nameColor);
+		Draw::AddText(Vec2i{x, top + 2}, std::move(name), Settings::ESP::Enemies::nameColor, TextFlags::Shadow, fontSize);
 	}
 	//}}}
 	//{{{ Bottom
 	{
-		//{{{ Current weapon
 		i32 bottom = box.x.y + box.y.y + 2;
+		//{{{Ammo bar
+		if (Settings::ESP::Enemies::ammoBar)
+		{
+			if (DrawAmmoBar(box, p, Settings::ESP::Enemies::ammoBarColor, Settings::ESP::Enemies::ammoBarReloadingColor))
+				bottom += 5;
+		}
+		//}}}
+		//{{{ Current weapon
 		if (Settings::ESP::Enemies::currentWeapon)
 		{
 			C_BaseCombatWeapon* weapon = reinterpret_cast<C_BaseCombatWeapon*>(entityList->GetClientEntityFromHandle(p->GetActiveWeapon()));
@@ -427,10 +509,21 @@ void DrawEnemy(C_BasePlayer* p, C_BasePlayer* lp)
 	// {{{ Right
 	{
 		Vec2 right{box.x.x + box.y.x + 2, box.x.y};
-		if (Settings::ESP::Enemies::kit && p->HasDefuser())
+		if (Settings::ESP::Enemies::kit)
 		{
-			Draw::AddText(Vec2i{right.x, right.y}, "\ue066"s, Settings::ESP::Enemies::kitColor, TextFlags::Shadow, fontSize);
-			right.y += fontSize;
+			if (p->HasDefuser())
+			{
+				if (p->IsDefusing())
+					Draw::AddText(Vec2i{right.x, right.y}, "\ue066 Defusing!"s, Settings::ESP::Enemies::kitDefusingColor, TextFlags::Shadow, fontSize);
+				else
+					Draw::AddText(Vec2i{right.x, right.y}, "\ue066"s, Settings::ESP::Enemies::kitColor, TextFlags::Shadow, fontSize);
+				right.y += fontSize;
+			}
+			else if (p->IsDefusing())
+			{
+				Draw::AddText(Vec2i{right.x, right.y}, "Defusing!"s, Settings::ESP::Enemies::kitDefusingColor, TextFlags::Shadow, fontSize);
+				right.y += fontSize;
+			}
 		}
 		if (Settings::ESP::Enemies::armor)
 		{
@@ -448,14 +541,34 @@ void DrawEnemy(C_BasePlayer* p, C_BasePlayer* lp)
 		if (Settings::ESP::Enemies::bomb && p->GetIndex() == (*csPlayerResource)->GetPlayerC4())
 		{
 			if (Util::IsPlanting(p))
-				Draw::AddText(Vec2i{right.x, right.y}, "\ue031 Planting"s, Settings::ESP::Enemies::bombColorPlanting, TextFlags::Shadow, fontSize);
+				Draw::AddText(Vec2i{right.x, right.y}, "\ue031 Planting!"s, Settings::ESP::Enemies::bombColorPlanting, TextFlags::Shadow, fontSize);
 			else
 				Draw::AddText(Vec2i{right.x, right.y}, "\ue031"s, Settings::ESP::Enemies::bombColor, TextFlags::Shadow, fontSize);
 			right.y += fontSize;
 		}
-		if (Settings::ESP::Enemies::dormant && p->IsDormant())
+		if (Settings::ESP::Enemies::dormant && PlayerAdditionalInfo::IsDormant(p))
 		{
 			Draw::AddText(Vec2i{right.x, right.y}, fmt::format("\ue067 {}ms"s, PlayerAdditionalInfo::DormantTime(p)), Settings::ESP::Enemies::dormantColor, TextFlags::Shadow, fontSize);
+			right.y += fontSize;
+		}
+		if (Settings::ESP::Enemies::hostage && p->IsGrabbingHostage())
+		{
+			Draw::AddText(Vec2i{right.x, right.y}, "\ue069 Grabbing!"s, Settings::ESP::Enemies::hostageGrabbingColor, TextFlags::Shadow, fontSize);
+			right.y += fontSize;
+		}
+		else if (Settings::ESP::Enemies::hostage && p->IsRescuing())
+		{
+			Draw::AddText(Vec2i{right.x, right.y}, "\ue069"s, Settings::ESP::Enemies::hostageColor, TextFlags::Shadow, fontSize);
+			right.y += fontSize;
+		}
+		if (Settings::ESP::Enemies::scoped && p->IsScoped())
+		{
+			Draw::AddText(Vec2i{right.x, right.y}, "\ue06A"s, Settings::ESP::Enemies::scopedColor, TextFlags::Shadow, fontSize);
+			right.y += fontSize;
+		}
+		if (Settings::ESP::Enemies::ping)
+		{
+			Draw::AddText(Vec2i{right.x, right.y}, fmt::format("\ue06C {}ms"s, (*csPlayerResource)->GetPing(p->GetIndex())), Settings::ESP::Enemies::pingColor, TextFlags::Shadow, fontSize);
 			right.y += fontSize;
 		}
 	}
@@ -467,7 +580,7 @@ void ESP::Paint()
 	if(!engine->IsInGame())
 		return;
 	vMatrix = engine->WorldToScreenMatrix();
-	screenResFactor = Vec2(Paint::engineWidth * Paint::windowWidth, Paint::engineHeight * Paint::windowHeight);
+	screenResFactor = Vec2((f32)Paint::windowWidth / Paint::engineWidth, (f32)Paint::windowHeight / Paint::engineHeight);
 
 	if (!Settings::Visuals::enabled)
 		return;

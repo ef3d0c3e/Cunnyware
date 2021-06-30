@@ -7,6 +7,8 @@
 #include "CCSGOAnimState.hpp"
 #include "CBaseHandle.hpp"
 
+class C_BaseCombatWeapon;
+
 static constexpr inline std::size_t MaxStudioBones = 128;
 static constexpr inline u8 LifeAlive = 0;
 static constexpr inline i32 BoneUsedByHitbox = 0x100;
@@ -31,6 +33,7 @@ public:
 	}
 	CUtlVector<AnimationLayer>* GetAnimOverlay()
 	{
+		std::cout << Offsets::playerAnimOverlayOffset << std::endl;
 		return reinterpret_cast<CUtlVector<AnimationLayer>*>((std::uintptr_t)this + Offsets::playerAnimOverlayOffset);
 	}
 	

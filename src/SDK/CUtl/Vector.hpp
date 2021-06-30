@@ -24,6 +24,14 @@ protected:
 	// For easier access to the elements through the debugger
 	// it's in release builds so this can be used in libraries correctly
 	T* elements;
+public:
+
+	[[nodiscard]] const T& operator[](std::size_t i) const noexcept
+	{ return elements[i]; }
+	[[nodiscard]] T& operator[](std::size_t i) noexcept
+	{ return elements[i]; }
+	[[nodiscard]] i32 Size() const noexcept
+	{ return size; }
 };
 
 #endif // SDK_CUTL_VECTOR_HPP

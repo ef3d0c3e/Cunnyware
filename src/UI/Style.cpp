@@ -5,12 +5,12 @@ namespace Settings::Style
 {
 	// Window
 	float child_padding = 10;
-	ImU32 window_bg = 0xFF1E1E1E;
+	ImU32 window_bg = 0xFF0D0D0D;
 	ImU32 window_accent = 0xFFF02020;
 	ImU32 window_border = 0x70232323;
 	//ImU32 title = 0xFFFF0000;
 	ImU32 title = 0xFFFFFFFF;
-	ImU32 child_bg = 0xFF232323;
+	ImU32 child_bg = 0xFF131313;
 	ImU32 child_border = 0xFF030303;
 	ImU32 tablist = 0xFF0F0F0F; //#DC3600;
 	ImU32 tablist_bg1[4] = {0xFF292929, 0xFF292929, 0xFF252525, 0xFF191919}; // normal, selected, hovered, active
@@ -35,8 +35,9 @@ namespace Settings::Style
 
 	// Buttons
 	ImU32 button_text = 0xFF202020;
-	ImU32 button_bg[3] = { 0xFFB8B8B8, 0xFFCCCCCC, 0xFFAAAAAA }; // normal, hovered, active
-	ImU32 button2_border = 0xFF030303;
+	ImU32 button_bg[3] = { 0xFF191919, 0xFFCCCCCC, 0xFFAAAAAA }; // normal, hovered, active
+	ImU32 button2_border = 0xFF010101;
+	ImU32 button2_border_accent = 0xFF2D2D2D;
 	ImU32 button2_text = 0xFFF0F0F0;
 	ImU32 button2_bg[3] = { 0xFF363432, 0xFF282825, 0xFF181716 }; // normal, hovered, active
 
