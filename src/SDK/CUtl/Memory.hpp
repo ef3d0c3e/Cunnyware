@@ -4,7 +4,7 @@
 #include "../../Util/Defs.hpp"
 
 template <class T, class I = int>
-class CUtlMemory : non_constructible
+class CUtlMemory
 {
 public:
 	class Iterator

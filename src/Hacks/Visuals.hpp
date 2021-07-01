@@ -72,6 +72,60 @@ namespace Enemies
 	extern ImVec4 pingColor;
 } // Enemies
 
+namespace Allies
+{
+	extern bool enabled;
+	extern BoxType box;
+	extern ImVec4 boxColorVisible;
+	extern ImVec4 boxColorInvisible;
+
+	extern bool skeleton;
+	extern ImVec4 skeletonColorVisible;
+	extern ImVec4 skeletonColorInvisible;
+	extern bool barrel;
+	extern f32 barrelLength;
+	extern ImVec4 barrelColor;
+
+	extern bool healthBar;
+	extern ImVec4 healthBarColor;
+	extern bool healthBarHealthBasedColor;
+	extern bool ammoBar;
+	extern ImVec4 ammoBarColor;
+	extern ImVec4 ammoBarReloadingColor;
+
+	extern bool currentWeapon;
+	extern ImVec4 currentWeaponColor;
+	extern bool otherWeapon;
+	extern ImVec4 otherWeaponColor;
+	extern bool grenades;
+	extern ImVec4 grenadesColor;
+
+	// Informations
+	extern bool name;
+	extern ImVec4 nameColor;
+	extern bool clan;
+	extern ImVec4 clanColor;
+	extern bool hp;
+	extern ImVec4 hpColor;
+	extern bool armor;
+	extern ImVec4 armorColor;
+	extern bool kit;
+	extern ImVec4 kitColor;
+	extern ImVec4 kitDefusingColor;
+	extern bool bomb;
+	extern ImVec4 bombColor;
+	extern ImVec4 bombColorPlanting;
+	extern bool hostage;
+	extern ImVec4 hostageColor;
+	extern ImVec4 hostageGrabbingColor;
+	extern bool scoped;
+	extern ImVec4 scopedColor;
+	extern bool dormant;
+	extern ImVec4 dormantColor;
+	extern bool ping;
+	extern ImVec4 pingColor;
+} // Allies
+
 } // ESP
 } // Settings
 

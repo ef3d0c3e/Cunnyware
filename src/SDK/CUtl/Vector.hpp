@@ -4,14 +4,14 @@
 #include "Memory.hpp"
 
 template <class T, class A = CUtlMemory<T>>
-class CUtlVector : non_constructible
+class CUtlVector
 {
 	typedef A CAllocator;
 
 public:
 	typedef T ElemType;
 
-protected:
+public:
 	// Can't copy this unless we explicitly do it!
 	CUtlVector(CUtlVector const& vec)
 	{

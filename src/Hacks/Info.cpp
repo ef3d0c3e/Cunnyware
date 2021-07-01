@@ -4,8 +4,6 @@
 #include "../Interface.hpp"
 #include <chrono>
 
-static constexpr i32 dormantTimeThreshold = 1500; ///< (ms) To still draw players after going dormant
-
 static std::array<PlayerAdditionalInfo, 32+1> informations;
 
 PlayerAdditionalInfo::PlayerAdditionalInfo()
@@ -24,7 +22,7 @@ bool PlayerAdditionalInfo::ShouldDraw(const C_BasePlayer* player)
 	if (!info.dormant)
 		return true;
 
-	return info.dormantTime < dormantTimeThreshold;
+	return info.dormantTime < GetMaxDormantTime();
 }
 
 bool PlayerAdditionalInfo::IsDormant(const C_BasePlayer* player)
@@ -42,6 +40,11 @@ bool PlayerAdditionalInfo::IsVisible(const C_BasePlayer* player)
 	return informations[player->GetIndex()].visible;
 }
 
+const std::array<char, PlayerInfo::MaxPlayerNameLength>& PlayerAdditionalInfo::GetName(const C_BasePlayer* player)
+{
+	return informations[player->GetIndex()].info.name;
+}
+
 void PlayerAdditionalInfo::NewRound()
 {
 	for (auto& info : informations)
@@ -50,7 +53,6 @@ void PlayerAdditionalInfo::NewRound()
 		info.dormantTime = 0;
 		info.visible = false;
 	}
-
 }
 
 void PlayerAdditionalInfo::Paint()
@@ -71,6 +73,7 @@ void PlayerAdditionalInfo::Paint()
 		auto p = reinterpret_cast<C_BasePlayer*>(ent);
 
 		PlayerAdditionalInfo& info = informations[i];
+		engine->GetPlayerInfo(i, &info.info);
 
 		if (p->IsDormant())
 		{
@@ -85,7 +88,7 @@ void PlayerAdditionalInfo::Paint()
 		//TODO: check for visible
 		//Util::IsVisible(p, Bones::HEAD, 180.f, false)
 		if (info.visible && info.dormant) [[unlikely]]
-			info.dormantTime = dormantTimeThreshold + 1; // Hide
+			info.dormantTime = GetMaxDormantTime() + 1; // Hide
 	}
 
 	lastTime = now;
