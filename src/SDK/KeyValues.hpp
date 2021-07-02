@@ -1,19 +1,18 @@
 #ifndef SDK_KEYVALUES_HPP
 #define SDK_KEYVALUES_HPP
 
-#include "Color.hpp"
+#include "Defs.hpp"
+class IBaseFileSystem;
 
-class KeyValues : non_constructible
+typedef bool (*GetSymbolProc)(const char* key);
+
+class KeyValues
 {
 public:
-	//
-	// AutoDelete class to automatically free the keyvalues.
-	// Simply construct it with the keyvalues you allocated and it will free them when falls out of scope.
-	// When you decide that keyvalues shouldn't be deleted call Assign(NULL) on it.
-	// If you constructed AutoDelete(NULL) you can later assign the keyvalues to be deleted with Assign(pKeyValues).
-	//
+	KeyValues() {}
+	~KeyValues() {}
 
-	MAKE_CENUM_Q(Types, i32,
+	MAKE_CENUM_Q(Types, u8,
 		NONE, 0,
 		STRING, 1,
 		INT, 2,
@@ -35,8 +34,23 @@ public:
 		BORROW, 3, // update values only update existing keys in storage, keys in update that do not exist in storage are discarded
 	);
 
-	u32 keyName = 24; // keyname is a symbol defined in KeyValuesSystem
-	u32 keyNameCaseSensitive1 = 8; // 1st part of case sensitive symbol defined in KeyValueSystem
+	void Init()
+	{
+		keyName = 0;
+		dataType = Types::NONE;
+		hasEscapeSequences = false;
+		evaluateConditionals = true;
+
+		sub = NULL;
+		peer = NULL;
+		chain = NULL;
+
+		value = NULL;
+		wsValue = NULL;
+		pValue = NULL;
+	}
+
+	i32 keyName; // keyname is a symbol defined in KeyValuesSystem
 
 	// These are needed out of the union because the API returns string pointers
 	char* value;
@@ -51,9 +65,10 @@ public:
 		std::array<u8, 4> cValue;
 	};
 
-	char dataType;
-	char hasEscapeSequences; // true, if while parsing this KeyValue, Escape Sequences are used (default false)
-	u16 keyNameCaseSensitive2; // 2nd part of case sensitive symbol defined in KeyValueSystem;
+	Types dataType;
+	bool hasEscapeSequences; // true, if while parsing this KeyValue, Escape Sequences are used (default false)
+	bool evaluateConditionals; // true, if while parsing this KeyValue, conditionals blocks are evaluated (default true) 
+	u8 unused;
 
 	KeyValues* peer; // pointer to next key in list
 	KeyValues* sub; // pointer to Start of a new sub key list

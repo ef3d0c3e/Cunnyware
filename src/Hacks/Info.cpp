@@ -11,6 +11,8 @@ PlayerAdditionalInfo::PlayerAdditionalInfo()
 	dormant = false;
 	dormantTime = 0;
 	visible = false;
+	distance = 0;
+	weapon = nullptr;
 }
 
 PlayerAdditionalInfo::~PlayerAdditionalInfo()
@@ -45,6 +47,16 @@ const std::array<char, PlayerInfo::MaxPlayerNameLength>& PlayerAdditionalInfo::G
 	return informations[player->GetIndex()].info.name;
 }
 
+f32 PlayerAdditionalInfo::GetDistance(const C_BasePlayer* player)
+{
+	return informations[player->GetIndex()].distance;
+}
+
+C_BaseCombatWeapon* PlayerAdditionalInfo::GetWeapon(const C_BasePlayer* player)
+{
+	return informations[player->GetIndex()].weapon;
+}
+
 void PlayerAdditionalInfo::NewRound()
 {
 	for (auto& info : informations)
@@ -52,12 +64,18 @@ void PlayerAdditionalInfo::NewRound()
 		info.dormant = false;
 		info.dormantTime = 0;
 		info.visible = false;
+		info.weapon = nullptr;
 	}
 }
 
 void PlayerAdditionalInfo::Paint()
 {
+	if (!engine->IsInGame())
+		return;
+
 	static std::chrono::time_point<std::chrono::high_resolution_clock> lastTime = std::chrono::high_resolution_clock::now();
+
+	C_BasePlayer* lp = reinterpret_cast<C_BasePlayer*>(entityList->GetClientEntity(engine->GetLocalPlayer()));
 
 	std::chrono::time_point<std::chrono::high_resolution_clock> now = std::chrono::high_resolution_clock::now();
 	for (i32 i = 1; i < std::min(entityList->GetHighestEntityIndex(), static_cast<i32>(informations.size())); ++i)
@@ -89,6 +107,9 @@ void PlayerAdditionalInfo::Paint()
 		//Util::IsVisible(p, Bones::HEAD, 180.f, false)
 		if (info.visible && info.dormant) [[unlikely]]
 			info.dormantTime = GetMaxDormantTime() + 1; // Hide
+
+		info.distance = (lp->GetVecOrigin() - p->GetVecOrigin()).Length<f32, true>();
+		info.weapon = reinterpret_cast<C_BaseCombatWeapon*>(entityList->GetClientEntityFromHandle(p->GetActiveWeapon()));
 	}
 
 	lastTime = now;

@@ -98,3 +98,16 @@ bool Util::IsGrenade(CSWeaponType type)
 {
 	return type == CSWeaponType::GRENADE;
 }
+
+IMaterial* Util::CreateMaterial(const std::string& name, const std::string& baseType, const std::string& mat)
+{
+	KeyValues* kv = new KeyValues;
+	InitKeyValues(kv, baseType.c_str());
+	LoadFromBuffer(kv, name.c_str(), mat.c_str(), nullptr, nullptr, nullptr);
+
+	IMaterial* created = material->CreateMaterial(name.c_str(), kv);
+	if (created)
+		created->IncrementReferenceCount();
+
+	return created;
+}

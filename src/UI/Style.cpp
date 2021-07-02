@@ -34,12 +34,14 @@ namespace Settings::Style
 
 
 	// Buttons
-	ImU32 button_text = 0xFF202020;
-	ImU32 button_bg[3] = { 0xFF191919, 0xFFCCCCCC, 0xFFAAAAAA }; // normal, hovered, active
+	ImU32 button_text = 0xFFF0F0F0;
+	ImU32 button_border = 0xFF010101;
+	ImU32 button_border_accent = 0xFF2D2D2D;
+	ImU32 button_bg[3] = { 0xFF191919, 0xFF282825, 0xFF181716 }; // normal, hovered, active
 	ImU32 button2_border = 0xFF010101;
 	ImU32 button2_border_accent = 0xFF2D2D2D;
 	ImU32 button2_text = 0xFFF0F0F0;
-	ImU32 button2_bg[3] = { 0xFF363432, 0xFF282825, 0xFF181716 }; // normal, hovered, active
+	ImU32 button2_bg[3] = { 0xFF191919, 0xFF282825, 0xFF181716 }; // normal, hovered, active
 
 	ImU32 selector_bg[4] = {0x00000000, 0xFF2C2C2C, 0xFF202020, 0xFF101010}; // normal, selected, hovered, active
 	ImU32 selector_accent = 0xFF68E000;
@@ -93,4 +95,7 @@ namespace Settings::Style
 	ImU32 pie_text = 0xFFFFFFFF;
 	ImU32 pie_button[3] = { 0xFF363432, 0xFF282825, 0xFF181716 };;
 	ImU32 pie_bg = 0xF01C1C1C;
+
+	ImU32 drag_anchor = 0xFF7F7F7F;
+	ImU32 drag_bg[3] = {0xFF454545, 0xFF1F1F1F, 0xFF1A1A1A}; // selected, hovered, active
 }

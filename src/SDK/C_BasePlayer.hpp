@@ -33,7 +33,7 @@ public:
 	}
 	CUtlVector<AnimationLayer>* GetAnimOverlay()
 	{
-		return reinterpret_cast<CUtlVector<AnimationLayer>*>((uintptr_t)this + Offsets::playerAnimOverlayOffset); // 12312
+		return reinterpret_cast<CUtlVector<AnimationLayer>*>((std::uintptr_t)this + Offsets::playerAnimOverlayOffset);
 	}
 	
 	CCSGOAnimState* GetAnimState()

@@ -31,6 +31,7 @@ struct ModelRenderInfo
 {
 	Vec3 origin;
 	QAngle angles;
+	char _padding[0x4];
 	IClientRenderable* renderable;
 	const model_t* model;
 	const Mat3x4* modelToWorld;

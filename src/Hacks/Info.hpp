@@ -3,6 +3,7 @@
 
 #include "../Util/Defs.hpp"
 #include "../SDK/PlayerInfo.hpp"
+#include "../SDK/C_BaseCombatWeapon.hpp"
 
 class PlayerAdditionalInfo
 {
@@ -10,6 +11,8 @@ class PlayerAdditionalInfo
 	u32 dormantTime; ///< (ms) Since dormant state
 	bool visible; ///< Is playerr visible
 	PlayerInfo info;
+	f32 distance;
+	C_BaseCombatWeapon* weapon;
 
 	// ...store bt info
 	
@@ -23,6 +26,8 @@ public:
 	inline static u32 GetMaxDormantTime() { return 1500; } ///< (ms) To still draw players after going dormant
 	static bool IsVisible(const class C_BasePlayer* player);
 	static const std::array<char, PlayerInfo::MaxPlayerNameLength>& GetName(const class C_BasePlayer* player);
+	static f32 GetDistance(const class C_BasePlayer* player);
+	static C_BaseCombatWeapon* GetWeapon(const class C_BasePlayer* player);
 
 	static void NewRound(); // Call at begining of every round
 	static void Paint(); // Call every frame before everything else

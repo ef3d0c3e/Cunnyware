@@ -31,6 +31,23 @@ void EndChild()
 	ImGui::Dummy(ImVec2(0, Settings::Style::child_padding));
 }
 
+void Child2(const char* label, float elems, bool scrolling)
+{
+	ImGui::PushStyleColor(ImGuiCol_Border, Settings::Style::child_border);
+	ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 1.f);
+	ImGui::BeginChild(label, ImVec2(-1, CalcHeight(elems)), true, scrolling ? 0 : ImGuiWindowFlags_NoScrollWithMouse);
+	ImGui::PopStyleVar();
+	ImGui::PopStyleColor();
+	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(8, 8));
+}
+
+void EndChild2()
+{
+	ImGui::PopStyleVar();
+	ImGui::EndChild();
+	ImGui::Dummy(ImVec2(0, Settings::Style::child_padding));
+}
+
 bool BeginPopupModal(const char* label, bool* p_open)
 {
 	return ImGui::BeginPopupModal(label, p_open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);

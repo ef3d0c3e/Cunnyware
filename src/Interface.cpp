@@ -176,6 +176,8 @@ void Interface::FindInterfaces()
 	Hooker::FindAbsFunctions();
 	Hooker::FindSequenceActivity();
 	Hooker::FindPlayerResource();
+	Hooker::FindInitKeyValues();
+	Hooker::FindLoadFromBuffer();
 }
 
 VMT* inputInternalVMT = nullptr;

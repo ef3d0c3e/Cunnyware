@@ -3,6 +3,54 @@
 
 #include "../Util/Util.hpp"
 #include "../ImGUI/imgui.h"
+#include "../SDK/IVModelRender.hpp"
+
+struct ChamsMat
+{
+	std::string code;
+	std::string name;
+	IMaterial* mat;
+	std::vector<ImVec4> colors; // only lerp
+
+	f32 value; // Arbitrary value [slider float / float input box] depending on the modulation type
+	MAKE_CENUM_Q(PlayerModulation, u8,
+		NONE, 0, // no modulation
+		STATIC, 1, // Color at value
+		HEALTH, 2, // 0.f dead, 1.f
+		ARMOR, 3,
+		AMMO, 4, //(ratio / clipsize)
+		DISTANCE, 5, // (ratio / MAX),
+		PING, 6, // (ratio / MAX),
+		DORMANT, 7, // (ratio / 1500)
+	);
+	MAKE_CENUM_Q(WeaponModulation, u8,
+		NONE, 0,
+		STATIC, 1,
+		AMMO, 2,
+		DISTANCE, 3);
+	MAKE_CENUM_Q(TimedGrenadeModulation, u8, // TODO ???
+		NONE, 0,
+		STATIC, 1,
+		DISTANCE, 2,
+		TIMER, 3);
+	MAKE_CENUM_Q(BombModulation, u8,
+		NONE, 0,
+		STATIC, 1,
+		DISTANCE, 2,
+		TIMER, 3);
+	MAKE_CENUM_Q(Modulation, u8,
+		NONE, 0,
+		STATIC, 1,
+		DISTANCE, 2);
+	union
+	{
+		PlayerModulation playerModulation;
+		WeaponModulation weaponModulation;
+		TimedGrenadeModulation timedGrenadeModulation;
+		BombModulation bombModulation;
+		Modulation modulation; // molo/smokes/decoy/chickens/hostages
+	};
+};
 
 namespace Settings
 {
@@ -127,14 +175,37 @@ namespace Allies
 } // Allies
 
 } // ESP
+
+namespace Chams
+{
+namespace Enemies
+{
+	extern bool drawOriginalModel;
+	extern std::vector<ChamsMat> materials;
+	extern bool validMaterials;
+} // Enemies
+
+namespace Allies
+{
+	extern bool drawOriginalModel;
+	extern std::vector<ChamsMat> materials;
+	extern bool validMaterials;
+} // Allies
+
+} // Chams
+
 } // Settings
 
 namespace ESP
 {
-	//bool WorldToScreen(const Vec3& pos, ImVec2 screen);
 	bool WorldToScreen(const Vec3& origin, Vec2& screen);
 
 	void Paint();
+}
+
+namespace Chams
+{
+	bool DrawModelExecute(void* thisptr, class IMatRenderContext* renderContext, const class DrawModelState& state, const ModelRenderInfo& info, Mat3x4* customBoneToWorld);
 }
 
 #endif // SDK_VISUALS_HPP

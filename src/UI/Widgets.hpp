@@ -15,6 +15,7 @@ namespace UI
 	void RenderTextClipped(const ImVec2& pos_min, const ImVec2& pos_max, const char* text, const char* text_end, const ImVec2* text_size_if_known, const ImVec2& align = ImVec2(0,0), const ImRect* clip_rect = NULL);
 	void Shadow(const ImVec2& p_min, const ImVec2& p_max, const ImU32 color[4]);
 	void RenderArrow(const ImVec2& p_min, ImGuiDir dir, float scale, const ImU32 color);
+	void RenderAnchor(const ImVec2& p_min, const ImU32 color);
 	void Desc(const char* label);
 	void Section(const char* label); // Height is +1.8
 	void PushDisabled(bool cond = true);
@@ -40,14 +41,17 @@ namespace UI
 	bool Checkbox(const char* label, bool* v);
 
 	bool InputText(const char* label, char* buf, size_t buf_size, ImVec2 size_args = ImVec2(0, 0), ImGuiInputTextFlags flags = 0, ImGuiTextEditCallback callback = NULL, void* user_data = NULL);
+	bool InputScalar(const char* label, ImGuiDataType data_type, void* data_ptr, const void* step, const void* step_fast, const char* format, ImGuiInputTextFlags extra_flags);
+	bool InputFloat(const char* label, f32* v, f32 step = 0.f, f32 step_fast = 0.f, const char* format = "%3.f", ImGuiInputTextFlags extra_flags = 0);
 
 	bool BeginCombo(const std::string& label, const std::string& preview, const char* tooltip = NULL, ImGuiComboFlags flags = 0);
 	void EndCombo();
 	bool Selectable(const char* label, bool selected = false, ImGuiSelectableFlags flags = 0, const ImVec2& size_arg = ImVec2(0,0));
+	bool Selectable2(const char* label, bool selected = false, ImGuiSelectableFlags flags = 0, const ImVec2& size_arg = ImVec2(0,0));
 	void SetItemDefaultFocus();
 	void CheckboxCombo(const char* label, const std::vector<std::tuple<const char*, const char*, bool&>>& data, std::string& format, const std::string& sep = ", "); // name, desc, value
 	template <class Container, class T>
-		requires std::is_integral_v<T>
+		requires std::is_convertible_v<T, int>
 	bool ListCombo(const std::string& label, const Container& elems, T& id)
 	{
 		bool changed = false;
@@ -95,10 +99,42 @@ namespace UI
 	bool BeginPopup(const char* str_id, ImGuiWindowFlags flags = 0);
 	void EndPopup();
 
+
+
 	void NotificationMessage(const std::string& message, struct NotificationType type, f32 ratio);
 	void Logs(const struct Messages& messages);
 	i32 PieMenu(const ImVec2& center, const char* popup_id, const std::vector<std::string>& items, i32* p_selected);
 	Vec2 GetTextSize(const std::string& text, const ImFont* font, f32 size);
+	template <class Container, class T, class F>
+		requires std::is_convertible_v<T, int>
+	void DragList(Container& c, T& selected, F&& getLabel)
+	{
+		for (std::size_t i = 0; i < c.size(); i++)
+		{
+			UI::Selectable2(getLabel(c[i]), i == selected);
+		
+			if (ImGui::IsItemActive() && !ImGui::IsItemHovered())
+			{
+				float drag_dy = ImGui::GetMouseDragDelta(0).y;
+				if (drag_dy < 0.0f && i > 0)
+				{
+					// Swap
+					std::swap(c[i], c[i-1]);
+					ImGui::ResetMouseDragDelta();
+				}
+				else if (drag_dy > 0.0f && i < c.size()-1)
+				{
+					std::swap(c[i], c[i+1]);
+					ImGui::ResetMouseDragDelta();
+				}
+				selected = -1;
+			}
+			if (ImGui::IsItemDeactivated() && ImGui::IsItemHovered())
+			{
+				selected = i;
+			}
+		}
+	}
 }
 
 #endif // UI_WIDGETS_HPP

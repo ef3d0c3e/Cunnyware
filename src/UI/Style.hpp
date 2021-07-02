@@ -39,6 +39,8 @@ namespace Settings::Style
 
 	// Buttons
 	extern ImU32 button_text;
+	extern ImU32 button_border;
+	extern ImU32 button_border_accent;
 	extern ImU32 button_bg[3]; // normal, hovered, active
 	extern ImU32 button2_border;
 	extern ImU32 button2_border_accent;
@@ -94,6 +96,10 @@ namespace Settings::Style
 	extern ImU32 pie_text;
 	extern ImU32 pie_button[3]; // normal, hovered, selected
 	extern ImU32 pie_bg;
+
+	// Drag
+	extern ImU32 drag_anchor;
+	extern ImU32 drag_bg[3]; // selected, hovered, active
 }
 
 #endif // UI_STYLE_HPP

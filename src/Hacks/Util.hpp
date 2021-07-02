@@ -4,6 +4,7 @@
 #include "../SDK/C_BaseEntity.hpp"
 #include "../SDK/C_BasePlayer.hpp"
 #include "../SDK/CCSWeaponInfo.hpp"
+#include "../SDK/IMaterial.hpp"
 
 MAKE_CENUM_Q(GameTypes, i32,
 	CLASSIC, 0,     // Casual and competitive (see gamerules_*.cfg)
@@ -24,6 +25,8 @@ namespace Util
 	bool IsTeamMate(C_BasePlayer* player, C_BasePlayer* localplayer);
 	bool IsOtherWeapon(CSWeaponType type);
 	bool IsGrenade(CSWeaponType type);
+
+	IMaterial* CreateMaterial(const std::string& name, const std::string& baseType /*"VertexLitGeneric" or "UnlitGeneric"*/, const std::string& mat);
 }
 
 

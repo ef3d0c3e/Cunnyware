@@ -16,6 +16,8 @@ using namespace std::literals;
 
 void Child(const char* label, float elems, bool scrolling = false);
 void EndChild();
+void Child2(const char* label, float elems, bool scrolling = false);
+void EndChild2();
 bool BeginPopupModal(const char* label, bool* p_open = NULL);
 void EndPopup();
 

@@ -213,6 +213,20 @@ void UI::RenderArrow(const ImVec2& p_min, ImGuiDir dir, float scale, const ImU32
 	}
 }
 
+void UI::RenderAnchor(const ImVec2& p_min, const ImU32 color)
+{
+	ImGuiContext& g = *GImGui;
+	ImGuiWindow* window = g.CurrentWindow;
+
+	float sz = g.FontSize;
+	
+	ImVec2 up = p_min + ImVec2(4.f, sz/3.f);
+	ImVec2 down  = p_min + ImVec2(4.f, 2.f*sz/3.f);
+
+	window->DrawList->AddLine(up, up + ImVec2(sz*.66, 0), color, 1.5f);
+	window->DrawList->AddLine(down, down + ImVec2(sz*.66, 0), color, 1.5f);
+}
+
 void Tooltip(const char* label)
 {
 	ImGuiContext& g = *GImGui;
@@ -233,14 +247,12 @@ void Tooltip(const char* label)
 	ImGui::PushStyleColor(ImGuiCol_Text, Settings::Style::tooltip_color[0]);
 	ImGui::PushStyleColor(ImGuiCol_Border, Settings::Style::tooltip_color[1]);
 	ImGui::PushStyleColor(ImGuiCol_PopupBg, Settings::Style::tooltip_color[2]);
-	ImGui::PushFont(UI::plex_mono);
 	ImGui::Begin(window_name, NULL, flags);
 
 	ImGui::Text(label);
 
 	IM_ASSERT(ImGui::GetCurrentWindowRead()->Flags & ImGuiWindowFlags_Tooltip);   // Mismatched BeginTooltip()/EndTooltip() calls
 	ImGui::End();
-	ImGui::PopFont();
 	ImGui::PopStyleColor();
 	ImGui::PopStyleColor();
 	ImGui::PopStyleColor();
@@ -486,7 +498,7 @@ bool UI::Button(const char* label, const ImVec2& size_arg)
 		pos.y += window->DC.CurrentLineTextBaseOffset - style.FramePadding.y;
 	ImVec2 size = ImGui::CalcItemSize(size_arg, label_size.x + style.FramePadding.x * 2.0f + label_size.y * 6, label_size.y + style.FramePadding.y * 2.0f);
 
-	const ImRect bb(pos, pos + size);
+	const ImRect bb(ImVec2((i32)pos.x, (i32)pos.y), ImVec2((i32)(pos.x+size.x), (i32)(pos.y+size.y)));
 	ImGui::ItemSize(bb, style.FramePadding.y);
 	if (!ImGui::ItemAdd(bb, id))
 		return false;
@@ -502,7 +514,9 @@ bool UI::Button(const char* label, const ImVec2& size_arg)
 	const ImU32 col = (held && hovered) ? Settings::Style::button_bg[2] : hovered ? Settings::Style::button_bg[1] :
 																					  Settings::Style::button_bg[0];
 	ImGui::RenderNavHighlight(bb, id);
-	ImGui::RenderFrame(bb.Min, bb.Max, col, true, style.FrameRounding);
+	window->DrawList->AddRect(bb.Min, bb.Max, Settings::Style::button_border, 0);
+	window->DrawList->AddRect(bb.Min+ImVec2(1, 1), bb.Max-ImVec2(1, 1), Settings::Style::button_border_accent, 0);
+	window->DrawList->AddRectFilled(bb.Min+ImVec2(2, 2), bb.Max-ImVec2(2, 2), col);
 	ImGui::PushStyleColor(ImGuiCol_Text, Settings::Style::button_text);
 	UI::RenderTextClipped(bb.Min + style.FramePadding, bb.Max - style.FramePadding, label, NULL, &label_size, style.ButtonTextAlign, &bb);
 	ImGui::PopStyleColor();
@@ -1076,7 +1090,7 @@ bool UI::Checkbox(const char* label, bool* v)
 }
 // }}}
 
-// {{{ InputText
+// {{{ Inputs
 bool UI::InputText(const char* label, char* buf, size_t buf_size, ImVec2 size_arg, ImGuiInputTextFlags flags, ImGuiTextEditCallback callback, void* user_data)
 {
 	ImGuiWindow* window = ImGui::GetCurrentWindow();
@@ -1740,6 +1754,72 @@ bool UI::InputText(const char* label, char* buf, size_t buf_size, ImVec2 size_ar
 	else
 		return value_changed;
 }
+
+bool UI::InputScalar(const char* label, ImGuiDataType data_type, void* data_ptr, const void* step, const void* step_fast, const char* format, ImGuiInputTextFlags extra_flags)
+{
+	ImGuiWindow* window = ImGui::GetCurrentWindow();
+	if (window->SkipItems)
+		return false;
+
+	ImGuiContext& g = *GImGui;
+	const ImGuiStyle& style = g.Style;
+
+	IM_ASSERT(data_type >= 0 && data_type < ImGuiDataType_COUNT);
+	if (format == NULL)
+		format = GDataTypeInfo[data_type].PrintFmt;
+
+	char buf[64];
+	DataTypeFormatString(buf, IM_ARRAYSIZE(buf), data_type, data_ptr, format);
+
+	bool value_changed = false;
+	if ((extra_flags & (ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_CharsScientific)) == 0)
+		extra_flags |= ImGuiInputTextFlags_CharsDecimal;
+	extra_flags |= ImGuiInputTextFlags_AutoSelectAll;
+
+	if (step != NULL)
+	{
+		const float button_size = ImGui::GetFrameHeight();
+
+		ImGui::BeginGroup(); // The only purpose of the group here is to allow the caller to query item data e.g. IsItemActive()
+		ImGui::PushID(label);
+		ImGui::PushItemWidth(ImMax(1.0f, ImGui::CalcItemWidth() - (button_size + style.ItemInnerSpacing.x) * 2));
+		if (UI::InputText("", buf, IM_ARRAYSIZE(buf), ImVec2(0, 0), extra_flags)) // PushId(label) + "" gives us the expected ID from outside point of view
+			value_changed = DataTypeApplyOpFromText(buf, g.InputTextState.InitialText.Data, data_type, data_ptr, format);
+		ImGui::PopItemWidth();
+
+		// Step buttons
+		ImGui::SameLine(0, style.ItemInnerSpacing.x);
+		if (ImGui::ButtonEx("-", ImVec2(button_size, button_size), ImGuiButtonFlags_Repeat | ImGuiButtonFlags_DontClosePopups))
+		{
+			DataTypeApplyOp(data_type, '-', data_ptr, data_ptr, g.IO.KeyCtrl && step_fast ? step_fast : step);
+			value_changed = true;
+		}
+		ImGui::SameLine(0, style.ItemInnerSpacing.x);
+		if (ImGui::ButtonEx("+", ImVec2(button_size, button_size), ImGuiButtonFlags_Repeat | ImGuiButtonFlags_DontClosePopups))
+		{
+			DataTypeApplyOp(data_type, '+', data_ptr, data_ptr, g.IO.KeyCtrl && step_fast ? step_fast : step);
+			value_changed = true;
+		}
+		ImGui::SameLine(0, style.ItemInnerSpacing.x);
+		ImGui::TextUnformatted(label, ImGui::FindRenderedTextEnd(label));
+
+		ImGui::PopID();
+		ImGui::EndGroup();
+	}
+	else
+	{
+		if (UI::InputText(label, buf, IM_ARRAYSIZE(buf), ImVec2(0, 0), extra_flags))
+			value_changed = DataTypeApplyOpFromText(buf, g.InputTextState.InitialText.Data, data_type, data_ptr, format);
+	}
+
+	return value_changed;
+}
+
+bool UI::InputFloat(const char* label, f32* v, f32 step, f32 step_fast, const char* format, ImGuiInputTextFlags extra_flags)
+{
+	extra_flags |= ImGuiInputTextFlags_CharsScientific;
+	return UI::InputScalar(label, ImGuiDataType_Float, (void*)v, (void*)(step>0.0f ? &step : NULL), (void*)(step_fast>0.0f ? &step_fast : NULL), format, extra_flags);
+}
 // }}}
 
 // {{{ Combo
@@ -1964,6 +2044,102 @@ bool UI::Selectable(const char* label, bool selected, ImGuiSelectableFlags flags
 	}
 
 	UI::RenderTextClipped(bb_inner.Min+ImVec2(Settings::Style::combo_text_padding, 0), bb.Max-ImVec2(Settings::Style::combo_text_padding, 0), label, NULL, &label_size, ImVec2(0.0f, 0.0f));
+
+	// Automatically close popups
+	if (pressed && (window->Flags & ImGuiWindowFlags_Popup) && !(flags & ImGuiSelectableFlags_DontClosePopups) && !(window->DC.ItemFlags & ImGuiItemFlags_SelectableDontClosePopup))
+		ImGui::CloseCurrentPopup();
+	return pressed;
+}
+
+bool UI::Selectable2(const char* label, bool selected, ImGuiSelectableFlags flags, const ImVec2& size_arg)
+{
+	ImGuiWindow* window = ImGui::GetCurrentWindow();
+	if (window->SkipItems)
+		return false;
+
+	ImGuiContext& g = *GImGui;
+	const ImGuiStyle& style = g.Style;
+
+	if ((flags & ImGuiSelectableFlags_SpanAllColumns) && window->DC.ColumnsSet) // FIXME-OPT: Avoid if vertically clipped.
+		ImGui::PopClipRect();
+
+	ImGuiID id = window->GetID(label);
+	ImVec2 label_size = ImGui::CalcTextSize(label, NULL, true);
+	ImVec2 size(size_arg.x != 0.0f ? size_arg.x : label_size.x, size_arg.y != 0.0f ? size_arg.y : label_size.y);
+	ImVec2 pos = window->DC.CursorPos;
+	pos.y += window->DC.CurrentLineTextBaseOffset;
+	ImRect bb_inner(pos, pos + size);
+	ImGui::ItemSize(bb_inner);
+
+	// Fill horizontal space.
+	ImVec2 window_padding = window->WindowPadding;
+	float max_x = (flags & ImGuiSelectableFlags_SpanAllColumns) ? ImGui::GetWindowContentRegionMax().x : ImGui::GetContentRegionMax().x;
+	float w_draw = ImMax(label_size.x, window->Pos.x + max_x - window_padding.x - window->DC.CursorPos.x);
+	ImVec2 size_draw((size_arg.x != 0 && !(flags & ImGuiSelectableFlags_DrawFillAvailWidth)) ? size_arg.x : w_draw, size_arg.y != 0.0f ? size_arg.y : size.y);
+	ImRect bb(pos, pos + size_draw);
+	if (size_arg.x == 0.0f || (flags & ImGuiSelectableFlags_DrawFillAvailWidth))
+		bb.Max.x += window_padding.x;
+
+	// Selectables are tightly packed together, we extend the box to cover spacing between selectable.
+	float spacing_L = (float)(int)(style.ItemSpacing.x * 0.5f);
+	float spacing_U = (float)(int)(style.ItemSpacing.y * 0.5f);
+	float spacing_R = style.ItemSpacing.x - spacing_L;
+	float spacing_D = style.ItemSpacing.y - spacing_U;
+	bb.Min.x -= spacing_L;
+	bb.Min.y -= spacing_U;
+	bb.Max.x += spacing_R;
+	bb.Max.y += spacing_D;
+	if (!ImGui::ItemAdd(bb, (flags & ImGuiSelectableFlags_Disabled) ? 0 : id))
+	{
+		if ((flags & ImGuiSelectableFlags_SpanAllColumns) && window->DC.ColumnsSet)
+			ImGui::PushColumnClipRect();
+		return false;
+	}
+
+	// We use NoHoldingActiveID on menus so user can click and _hold_ on a menu then drag to browse child entries
+	ImGuiButtonFlags button_flags = 0;
+	if (flags & ImGuiSelectableFlags_NoHoldingActiveID)
+		button_flags |= ImGuiButtonFlags_NoHoldingActiveID;
+	if (flags & ImGuiSelectableFlags_PressedOnClick)
+		button_flags |= ImGuiButtonFlags_PressedOnClick;
+	if (flags & ImGuiSelectableFlags_PressedOnRelease)
+		button_flags |= ImGuiButtonFlags_PressedOnRelease;
+	if (flags & ImGuiSelectableFlags_Disabled)
+		button_flags |= ImGuiButtonFlags_Disabled;
+	if (flags & ImGuiSelectableFlags_AllowDoubleClick)
+		button_flags |= ImGuiButtonFlags_PressedOnClickRelease | ImGuiButtonFlags_PressedOnDoubleClick;
+	bool hovered, held;
+	bool pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, button_flags);
+	if (flags & ImGuiSelectableFlags_Disabled)
+		selected = false;
+
+	// Hovering selectable with mouse updates NavId accordingly so navigation can be resumed with gamepad/keyboard (this doesn't happen on most widgets)
+	if (pressed || hovered)
+		if (!g.NavDisableMouseHover && g.NavWindow == window && g.NavLayer == window->DC.NavLayerCurrent)
+		{
+			g.NavDisableHighlight = true;
+			SetNavID(id, window->DC.NavLayerCurrent);
+		}
+	if (pressed)
+		ImGui::MarkItemValueChanged(id);
+
+	// Render
+	if (hovered || selected)
+	{
+		const ImU32 col = (held && hovered) ? Settings::Style::drag_bg[2] : hovered ? Settings::Style::drag_bg[1] :
+																							  Settings::Style::drag_bg[0];
+		ImGui::RenderFrame(bb.Min, bb.Max, col, false, 0.0f);
+		ImGui::RenderNavHighlight(bb, id, ImGuiNavHighlightFlags_TypeThin | ImGuiNavHighlightFlags_NoRounding);
+	}
+
+	if ((flags & ImGuiSelectableFlags_SpanAllColumns) && window->DC.ColumnsSet)
+	{
+		ImGui::PushColumnClipRect();
+		bb.Max.x -= (ImGui::GetContentRegionMax().x - max_x);
+	}
+
+	UI::RenderTextClipped(bb_inner.Min+ImVec2(label_size.y*1.2f, 0), bb.Max, label, NULL, &label_size, ImVec2(0.0f, 0.0f));
+	UI::RenderAnchor(bb_inner.Min, Settings::Style::drag_anchor);
 
 	// Automatically close popups
 	if (pressed && (window->Flags & ImGuiWindowFlags_Popup) && !(flags & ImGuiSelectableFlags_DontClosePopups) && !(window->DC.ItemFlags & ImGuiItemFlags_SelectableDontClosePopup))

@@ -1,6 +1,8 @@
 #include "Tabs.hpp"
+#include "../../ImGUI/TextEditor.h"
 #include "../Widgets.hpp"
 #include "../../Hacks/Visuals.hpp"
+#include "../../Hacks/Info.hpp"
 
 static void VisualsSettings()
 {
@@ -24,6 +26,12 @@ MAKE_CENUM_Q(ESPEntity, i32,
 	CHICKEN, 6,
 	FISH, 7);
 static ESPEntity ESPEnt = 0;
+static ESPEntity ChamsEnt = 0;
+
+const static std::vector<std::string> ESPEnts
+{
+	"Enemies", "Allies", "Localplayer", "Weapons", "Projectiles", "Bomb", "Chickens", "Fishes"
+};
 
 static void ESPLeft()
 {
@@ -32,7 +40,7 @@ static void ESPLeft()
 		"None", "2D Box", "3D Box"
 	};
 
-	Child("##ESPBOXES", 17.05f);
+	Child("##ESPLEFT", 17.05f);
 	switch(ESPEnt)
 	{
 		case ESPEntity::ENEMY:
@@ -137,11 +145,6 @@ static void ESPLeft()
 
 static void ESPRight()
 {
-	const static std::vector<std::string> ESPEnts
-	{
-		"Enemies", "Allies", "Localplayer", "Weapons", "Projectiles", "Bomb", "Chickens", "Fishes"
-	};
-
 	{
 		UI::Button2(ESPEnts[ESPEnt].c_str(), ImVec2(-1, 0));
 		if (ImGui::IsItemActive()) // don't wait for release
@@ -153,7 +156,7 @@ static void ESPRight()
 	}
 
 	ImGui::Dummy(ImVec2(0, 8));
-	Child("##ESPLEFT", 15.8f);
+	Child("##ESPRIGHT", 15.8f);
 	switch(ESPEnt)
 	{
 		case ESPEntity::ENEMY:
@@ -206,6 +209,183 @@ static void ESPRight()
 	EndChild();
 }
 
+static i64 selected = -1;
+
+
+const static std::array<std::string, ChamsMat::PlayerModulation::size> PlayerModulationNames{
+	"None", "Static", "Health", "Armor", "Ammo", "Distance", "Ping", "Dormant Time"
+};
+const static std::array<std::string, ChamsMat::WeaponModulation::size> WeaponModulationNames{
+	"None", "Static", "Ammo", "Distance"
+};
+const static std::array<std::string, ChamsMat::TimedGrenadeModulation::size> TimedGrenadeModulationNames{
+	"None", "Static", "Distance", "Timer"
+};
+const static std::array<std::string, ChamsMat::BombModulation::size> BombModulationNames{
+	"None", "Static", "Distance", "Timer"
+};
+const static std::array<std::string, ChamsMat::Modulation::size> ModulationNames{
+	"None", "Static", "Distance"
+};
+void ChamsLeft()
+{
+	switch (ChamsEnt)
+	{
+		case ESPEntity::ENEMY:
+		{
+			if (selected >= Settings::Chams::Enemies::materials.size())
+				selected = -1;
+			if (selected < 0)
+				return;
+
+			Child("##CHAMSMODULATION", 17.05f);
+			UI::Section(fmt::format("{}'s configuration", Settings::Chams::Enemies::materials[selected].name).c_str());
+			if (UI::ListCombo("Color modulation", PlayerModulationNames, Settings::Chams::Enemies::materials[selected].playerModulation))
+				Settings::Chams::Enemies::materials[selected].value = 0.f;
+			switch (Settings::Chams::Enemies::materials[selected].playerModulation)
+			{
+				case ChamsMat::PlayerModulation::STATIC:
+					UI::SliderFloat("Value", &Settings::Chams::Enemies::materials[selected].value, 0.f, 0.f, 1.f);
+					UI::Desc("Static value");
+					break;
+				case ChamsMat::PlayerModulation::AMMO:
+					UI::SliderFloat("Fallback", &Settings::Chams::Enemies::materials[selected].value, 0.f, 0.f, 1.f);
+					UI::Desc("Value to use in case the player has no weapon");
+					break;
+				case ChamsMat::PlayerModulation::DISTANCE:
+					UI::InputFloat("Max distance", &Settings::Chams::Enemies::materials[selected].value, 0.f, 0.f, "%.0fu");
+					break;
+				case ChamsMat::PlayerModulation::PING:
+					UI::SliderFloat("Max Ping", &Settings::Chams::Enemies::materials[selected].value, 0.f, 0.f, 1000.f, "%.0fms");
+					break;
+				case ChamsMat::PlayerModulation::DORMANT:
+					UI::SliderFloat("Max Dormant Time", &Settings::Chams::Enemies::materials[selected].value, 0.f, 0.f, static_cast<f32>(PlayerAdditionalInfo::GetMaxDormantTime()), "%.0fms");
+					break;
+				default: break;
+			}
+			std::size_t i = 1;
+			for (auto& col : Settings::Chams::Enemies::materials[selected].colors)
+			{
+				UI::ColorEdit4(fmt::format("Color {}", i).c_str(), col);
+				ImGui::SameLine();
+				if (UI::Button("\ue002", ImVec2(ImGui::GetFrameHeight(), ImGui::GetFrameHeight())) && Settings::Chams::Enemies::materials[selected].colors.size() > 1)
+					Settings::Chams::Enemies::materials[selected].colors.erase(Settings::Chams::Enemies::materials[selected].colors.begin()+i-1);
+				UI::Desc("Remove color");
+				++i;
+			}
+			if (UI::Button("\ue000", ImVec2(ImGui::GetFrameHeight(), ImGui::GetFrameHeight())))
+				Settings::Chams::Enemies::materials[selected].colors.push_back(ImVec4(1.f, 1.f, 1.f, 1.f));
+			UI::Desc("Add new color");
+			
+			EndChild();
+		}
+		break;
+		default: break;
+	}
+}
+
+static TextEditor editor = []
+{
+	TextEditor editor;
+	auto lang = TextEditor::LanguageDefinition::C();
+
+	editor.SetLanguageDefinition(lang);
+	editor.SetTabSize(2);
+	return editor;
+}();
+
+void ChamsRight()
+{
+	UI::ListCombo("", ESPEnts, ChamsEnt);
+	ImGui::Dummy(ImVec2(0, 8));
+
+	static std::array<char, 128> buf = {0};
+	auto addMaterial = [&](std::vector<ChamsMat>& materials, const std::string& name)
+	{
+		if (name.empty())
+		{
+			UI::AddNotification("Invalid material name!", UI::NotificationType::ERROR, 5000);
+			return;
+		}
+		if (std::find_if(Settings::Chams::Enemies::materials.begin(), Settings::Chams::Enemies::materials.end(),
+					[&](const ChamsMat& m) { return m.name == name; }) != Settings::Chams::Enemies::materials.end())
+		{
+			UI::AddNotification(fmt::format("Material '{}' already exists!", name), UI::NotificationType::ERROR, 5000);
+			return;
+		}
+
+		materials.push_back(ChamsMat{
+			.code = "\"VertexLitGeneric\"\n"
+			"{\n"
+			"	\"$basetexture\" \"vgui/white_additive\"\n"
+			"	\"$envmap\" \"\"\n"
+			"	\"$model\" \"1\"\n"
+			"	\"$flat\" \"1\"\n"
+			"	\"$nocull\" \"0\"\n"
+			"	\"$selfillum\" \"1\"\n"
+			"	\"$halflambert\" \"1\"\n"
+			"	\"$nofog\" \"0\"\n"
+			"	\"$ignorez\" \"1\"\n"
+			"	\"$znearer\" \"0\"\n"
+			"	\"$wireframe\" \"0\"\n"
+			"}",
+			.name = std::move(name),
+			.mat = nullptr,
+			.colors = std::vector<ImVec4>{ImVec4(1.f, 1.f, 1.f, 1.f)},
+			.value = 0.f,
+		});
+
+		buf[0] = 0;
+		UI::AddNotification(fmt::format("Material '{}' created", name), UI::NotificationType::MESSAGE, 1500);
+	};
+
+	Child("##CHAMSSETTINGS", 15.8f, true);
+	switch (ChamsEnt)
+	{
+		case ESPEntity::ENEMY:
+		{
+			UI::Checkbox("Draw original model", &Settings::Chams::Enemies::drawOriginalModel);
+			ImGui::Columns(2, NULL, false);
+			{
+				UI::InputText("", buf.data(), buf.size(), ImVec2(-1, 0));
+			}
+			ImGui::NextColumn();
+			{
+				if (UI::Button("Add material", ImVec2(-1, 0)))
+					addMaterial(Settings::Chams::Enemies::materials, buf.data());
+			}
+			ImGui::EndColumns();
+			if (UI::Button2("Compile materials", ImVec2(-1, 0)))
+			{
+
+			}
+			UI::Section("Materials order");
+			i64 prevSelected = selected;
+			if (UI::DragList(Settings::Chams::Enemies::materials, selected, [](const ChamsMat& m) { return m.name.c_str(); }); prevSelected != selected)
+			{
+				if (prevSelected > 0)
+					Settings::Chams::Enemies::materials[prevSelected].code = editor.GetText();
+				if (selected > 0)
+					editor.SetText(Settings::Chams::Enemies::materials[selected].code);
+			}
+			break;
+		}
+		default: break;
+	}
+	EndChild();
+}
+
+void ChamsEditor()
+{
+	Child2("##CHAMSEDITOR", 17.05f);
+
+	ImGui::PushFont(UI::iosevka_mono);
+	editor.Render("Chams editor");
+	ImGui::PopFont();
+//https://www.unknowncheats.me/forum/counterstrike-global-offensive/240933-change-chams-materials.html
+	EndChild2();
+}
+
 void Tabs::Visuals()
 {
 	MakeTab
@@ -219,6 +399,11 @@ void Tabs::Visuals()
 			std::make_pair("ESP"s, (TabContent)
 			{
 				{ ESPLeft, ESPRight }
+			}),
+			std::make_pair("Chams"s, (TabContent)
+			{
+				{ ChamsLeft, ChamsRight },
+				{ ChamsEditor }
 			})
 		)
 	);

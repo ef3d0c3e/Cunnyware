@@ -1,0 +1,9 @@
+#ifndef SDK_IMATRENDERCONTEXT_HPP
+#define SDK_IMATRENDERCONTEXT_HPP
+
+class IMatRenderContext
+{
+	
+};
+
+#endif // SDK_IMATRENDERCONTEXT_HPP

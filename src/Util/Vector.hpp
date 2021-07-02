@@ -815,13 +815,14 @@ public:
 	////////////////////////////////////////////////
 	/// \brief Reduces the vector to a single scalar
 	/// \tparam F The functor ```<T(const Vector&, const T&)>```
+	/// \tparam R The custom return type
 	/// \note The functor F, must be callable, and its ```operator()``` must take a template argument of type size_type
 	/// \returns The scalar
 	////////////////////////////////////////////////
-	template <class F>
+	template <class F, class R = T>
 	auto Reduce() noexcept
 	{
-		T r;
+		R r;
 		if constexpr (S.NoCE)
 		{
 			r = base_type::operator[](0);
@@ -2570,11 +2571,11 @@ public:
 				R ret = R();
 
 				vector_foreach_do_v(
-					ret += Get<i>()*Get<i>(),
-					ret += operator[](i)*operator[](i),
+					ret += std::pow(Get<i>(), NormID),
+					ret += std::pow(operator[](i), NormID),
 				false, N-1, __expand(&, this))
 
-				return std::sqrt(ret);
+				return std::pow(ret, static_cast<R>(1)/static_cast<R>(NormID));
 			}
 		}
 	}
@@ -2653,7 +2654,6 @@ public:
 			ctor_impl<0>(ts...);
 		}
 	}
-
 }; // Vector
 
 }; // MPVector

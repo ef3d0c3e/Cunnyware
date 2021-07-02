@@ -1,7 +1,0 @@
-hl2sdk-csgo/
-build/
-tmp/
-.ccls-cache/
-std/.ccls-cache/
-compile_commands.json
-.clang-format

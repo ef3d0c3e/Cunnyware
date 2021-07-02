@@ -19,8 +19,25 @@ void UI::SetVisible(bool visible)
 
 void UI::Draw()
 {
+	static bool limited = false;
+	static i32 maxFps = 0;
 	if (!UI::isVisible)
+	{
+		if (limited)
+		{
+			limited = false;
+			cvar->FindVar("fps_max")->SetValue(maxFps);
+		}
 		return;
+	}
+
+	if (!limited)
+	{
+		auto fps_max = cvar->FindVar("fps_max");
+		maxFps = fps_max->GetInt();
+		limited = true;
+		fps_max->SetValue(60);
+	}
 
 	constexpr static std::array<std::pair<std::string_view, std::string_view>, 6> tabsName
 	{

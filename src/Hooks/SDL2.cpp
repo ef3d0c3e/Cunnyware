@@ -14,12 +14,12 @@
 #include "../incbin/incbin.h"
 INCBIN(PlexRegular, "../src/Resources/IBMPlexSans-Medium.ttf");
 INCBIN(PlexBold, "../src/Resources/IBMPlexSans-Bold.ttf");
-INCBIN(PlexMono, "../src/Resources/IBMPlexMono-Text.ttf");
 INCBIN(ESPFont, "../src/Resources/ESPFont.ttf");
+INCBIN(IosevkaMono, "../src/Resources/Iosevka Mono.ttf");
 ImFont* UI::plex_regular = nullptr;
 ImFont* UI::plex_bold = nullptr;
-ImFont* UI::plex_mono = nullptr;
 ImFont* UI::espfont = nullptr;
+ImFont* UI::iosevka_mono = nullptr;
 
 bool SDL2::wantRebuild = true;
 u32 SDL2::fontFlags = 0;
@@ -118,7 +118,7 @@ static void SwapWindow(SDL_Window* window)
 		config.SizePixels = 20.f;
 		UI::plex_regular = io.Fonts->AddFontFromMemoryTTF(const_cast<u8*>(resPlexRegularData), resPlexRegularSize, 20.f, &config);
 		UI::plex_bold = io.Fonts->AddFontFromMemoryTTF(const_cast<u8*>(resPlexBoldData), resPlexBoldSize, 20.f, &config);
-		UI::plex_mono = io.Fonts->AddFontFromMemoryTTF(const_cast<u8*>(resPlexMonoData), resPlexMonoSize, 20.f, &config);
+		UI::iosevka_mono = io.Fonts->AddFontFromMemoryTTF(const_cast<u8*>(resIosevkaMonoData), resIosevkaMonoSize, 20.f, &config);
 
 		constexpr static std::array<ImWchar, 25> ESPRange = {
 			0x0020, 0x0787,

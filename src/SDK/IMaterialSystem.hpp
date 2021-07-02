@@ -51,7 +51,7 @@ class IPaintMapDataManager;
 class ApplicationPerformanceCountersInfo;
 class ApplicationInstantCountersInfo;
 
-class IMaterialSystem : public IAppSystem, public non_constructible
+class IMaterialSystem : public IAppSystem
 {
 public:
 	// Placeholder for API revision
@@ -89,6 +89,7 @@ public:
 	//---------------------------------------------------------
 	virtual void SetThreadMode(MaterialThreadMode mode, i32 serviceThread = -1) = 0;
 	virtual MaterialThreadMode GetThreadMode() = 0;
+	virtual bool IsRenderThreadSafe( ) = 0;
 	virtual void ExecuteQueued() = 0;
 
 	virtual void OnDebugEvent(const char* event) = 0;

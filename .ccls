@@ -1,9 +1,0 @@
--Wall
--Wextra
--pedantic
--std=c++2a
--stdlib=libstdc++
--ftemplate-depth=80
--isystem /usr/local/include
--isystem /usr/include
--isystem /usr/include/c++/v1

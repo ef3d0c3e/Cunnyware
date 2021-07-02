@@ -381,7 +381,7 @@ bool DrawAmmoBar(const Rect2& box, C_BasePlayer* p, ImColor ammo, ImColor reload
 {
 	bool isReloading = false;
 	f32 perc = 0.f;
-	auto weapon = entityList->GetClientEntityFromHandle(p->GetActiveWeapon());
+	auto weapon = PlayerAdditionalInfo::GetWeapon(p);
 	if (!weapon)
 		return false;
 
@@ -424,7 +424,7 @@ void DrawEnemy(C_BasePlayer* p, C_BasePlayer* lp)
 	if (PlayerAdditionalInfo::IsVisible(p))
 	{
 		if (PlayerAdditionalInfo::IsDormant(p))
-			DrawBox(box, p, transparent(Settings::ESP::Enemies::boxColorVisible, 1.f-(f32)PlayerAdditionalInfo::DormantTime(p)/PlayerAdditionalInfo::GetMaxDormantTime()), Settings::ESP::Enemies::box);
+			DrawBox(box, p, transparent(Settings::ESP::Enemies::boxColorVisible, std::pow(1.f-(f32)PlayerAdditionalInfo::DormantTime(p)/PlayerAdditionalInfo::GetMaxDormantTime(), 2)), Settings::ESP::Enemies::box);
 		else
 			DrawBox(box, p, Settings::ESP::Enemies::boxColorVisible, Settings::ESP::Enemies::box);
 		if (Settings::ESP::Enemies::skeleton)
@@ -435,7 +435,7 @@ void DrawEnemy(C_BasePlayer* p, C_BasePlayer* lp)
 	else
 	{
 		if (PlayerAdditionalInfo::IsDormant(p))
-			DrawBox(box, p, transparent(Settings::ESP::Enemies::boxColorInvisible, 1.f-(f32)PlayerAdditionalInfo::DormantTime(p)/PlayerAdditionalInfo::GetMaxDormantTime()), Settings::ESP::Enemies::box);
+			DrawBox(box, p, transparent(Settings::ESP::Enemies::boxColorInvisible, std::pow(1.f-(f32)PlayerAdditionalInfo::DormantTime(p)/PlayerAdditionalInfo::GetMaxDormantTime(), 2)), Settings::ESP::Enemies::box);
 		else
 			DrawBox(box, p, Settings::ESP::Enemies::boxColorInvisible, Settings::ESP::Enemies::box);
 		if (Settings::ESP::Enemies::skeleton)
@@ -488,7 +488,7 @@ void DrawEnemy(C_BasePlayer* p, C_BasePlayer* lp)
 		//{{{ Current weapon
 		if (Settings::ESP::Enemies::currentWeapon)
 		{
-			C_BaseCombatWeapon* weapon = reinterpret_cast<C_BaseCombatWeapon*>(entityList->GetClientEntityFromHandle(p->GetActiveWeapon()));
+			C_BaseCombatWeapon* weapon = PlayerAdditionalInfo::GetWeapon(p);
 			if (weapon)
 			{
 				std::string name = codepointToUtf8(0xE000 + static_cast<i16>(*weapon->GetItemDefinitionIndex()));
@@ -707,7 +707,7 @@ void DrawAlly(C_BasePlayer* p, C_BasePlayer* lp)
 		//{{{ Current weapon
 		if (Settings::ESP::Allies::currentWeapon)
 		{
-			C_BaseCombatWeapon* weapon = reinterpret_cast<C_BaseCombatWeapon*>(entityList->GetClientEntityFromHandle(p->GetActiveWeapon()));
+			C_BaseCombatWeapon* weapon = PlayerAdditionalInfo::GetWeapon(p);
 			if (weapon)
 			{
 				std::string name = codepointToUtf8(0xE000 + static_cast<i16>(*weapon->GetItemDefinitionIndex()));
