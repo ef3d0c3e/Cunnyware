@@ -268,12 +268,12 @@ void ChamsLeft()
 			{
 				UI::ColorEdit4(fmt::format("Color {}", i).c_str(), col);
 				ImGui::SameLine();
-				if (UI::Button("\ue002", ImVec2(ImGui::GetFrameHeight(), ImGui::GetFrameHeight())) && Settings::Chams::Enemies::materials[selected].colors.size() > 1)
+				if (UI::ButtonText("\ue002", 0xFF0000FF, ImVec2(ImGui::GetFrameHeight(), ImGui::GetFrameHeight())) && Settings::Chams::Enemies::materials[selected].colors.size() > 1)
 					Settings::Chams::Enemies::materials[selected].colors.erase(Settings::Chams::Enemies::materials[selected].colors.begin()+i-1);
 				UI::Desc("Remove color");
 				++i;
 			}
-			if (UI::Button("\ue000", ImVec2(ImGui::GetFrameHeight(), ImGui::GetFrameHeight())))
+			if (UI::ButtonText("\ue000", 0xFF00FF00, ImVec2(ImGui::GetFrameHeight(), ImGui::GetFrameHeight())))
 				Settings::Chams::Enemies::materials[selected].colors.push_back(ImVec4(1.f, 1.f, 1.f, 1.f));
 			UI::Desc("Add new color");
 			
@@ -361,13 +361,10 @@ void ChamsRight()
 			}
 			UI::Section("Materials order");
 			i64 prevSelected = selected;
-			if (UI::DragList(Settings::Chams::Enemies::materials, selected, [](const ChamsMat& m) { return m.name.c_str(); }); prevSelected != selected)
-			{
-				if (prevSelected > 0)
-					Settings::Chams::Enemies::materials[prevSelected].code = editor.GetText();
-				if (selected > 0)
-					editor.SetText(Settings::Chams::Enemies::materials[selected].code);
-			}
+			i32 ret = UI::DragList(Settings::Chams::Enemies::materials, selected, [](const ChamsMat& m) { return m.name.c_str(); },
+					[&](i64 s){ if (s >= 0) Settings::Chams::Enemies::materials[s].code = editor.GetText(); });
+			if (ret == 1)
+				editor.SetText(Settings::Chams::Enemies::materials[selected].code);
 			break;
 		}
 		default: break;
@@ -378,6 +375,11 @@ void ChamsRight()
 void ChamsEditor()
 {
 	Child2("##CHAMSEDITOR", 17.05f);
+	if (selected < 0)
+	{
+		EndChild2();
+		return;
+	}
 
 	ImGui::PushFont(UI::iosevka_mono);
 	editor.Render("Chams editor");

@@ -31,6 +31,7 @@ namespace UI
 
 	bool Button(const char* label, const ImVec2& size_args = ImVec2(0, 0));
 	bool Button2(const char* label, const ImVec2& size_args = ImVec2(0, 0)); // button was so great they made a button 2
+	bool ButtonText(const char* label, ImU32 color, const ImVec2& size_args = ImVec2(0, 0));
 	bool SelectButton(const char* label, bool selected, const ImVec2& size_args = ImVec2(0, 0));
 	bool TabList(const char* label, std::size_t len, u64 tab, u64 cur, u64 max, ImRect& bb_out, const ImVec2& size_args = ImVec2(0, 0));
 	bool TabList(const std::string_view& label, u64 tab, u64 cur, u64 max, ImRect& bb_out, const ImVec2& size_args = ImVec2(0, 0));
@@ -100,14 +101,13 @@ namespace UI
 	void EndPopup();
 
 
-
 	void NotificationMessage(const std::string& message, struct NotificationType type, f32 ratio);
 	void Logs(const struct Messages& messages);
 	i32 PieMenu(const ImVec2& center, const char* popup_id, const std::vector<std::string>& items, i32* p_selected);
 	Vec2 GetTextSize(const std::string& text, const ImFont* font, f32 size);
-	template <class Container, class T, class F>
+	template <class Container, class T, class F, class G>
 		requires std::is_convertible_v<T, int>
-	void DragList(Container& c, T& selected, F&& getLabel)
+	i32 DragList(Container& c, T& selected, F&& getLabel, G&& pre)
 	{
 		for (std::size_t i = 0; i < c.size(); i++)
 		{
@@ -119,11 +119,13 @@ namespace UI
 				if (drag_dy < 0.0f && i > 0)
 				{
 					// Swap
+					pre(selected);
 					std::swap(c[i], c[i-1]);
 					ImGui::ResetMouseDragDelta();
 				}
 				else if (drag_dy > 0.0f && i < c.size()-1)
 				{
+					pre(selected);
 					std::swap(c[i], c[i+1]);
 					ImGui::ResetMouseDragDelta();
 				}
@@ -131,9 +133,12 @@ namespace UI
 			}
 			if (ImGui::IsItemDeactivated() && ImGui::IsItemHovered())
 			{
+				pre(selected);
 				selected = i;
+				return 1;
 			}
 		}
+		return 0;
 	}
 }
 

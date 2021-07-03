@@ -524,6 +524,46 @@ bool UI::Button(const char* label, const ImVec2& size_arg)
 	return pressed;
 }
 
+bool UI::ButtonText(const char* label, ImU32 color, const ImVec2& size_arg)
+{
+	ImGuiButtonFlags flags = 0;
+
+	ImGuiWindow* window = ImGui::GetCurrentWindow();
+	if (window->SkipItems)
+		return false;
+
+	ImGuiContext& g = *GImGui;
+	const ImGuiStyle& style = g.Style;
+	const ImGuiID id = window->GetID(label);
+	const ImVec2 label_size = ImGui::CalcTextSize(label, NULL, true);
+
+	ImVec2 pos = window->DC.CursorPos;
+	if ((flags & ImGuiButtonFlags_AlignTextBaseLine) && style.FramePadding.y < window->DC.CurrentLineTextBaseOffset) // Try to vertically align buttons that are smaller/have no padding so that text baseline matches (bit hacky, since it shouldn't be a flag)
+		pos.y += window->DC.CurrentLineTextBaseOffset - style.FramePadding.y;
+	ImVec2 size = ImGui::CalcItemSize(size_arg, label_size.x + style.FramePadding.x * 2.0f + label_size.y * 6, label_size.y + style.FramePadding.y * 2.0f);
+
+	const ImRect bb(ImVec2((i32)pos.x, (i32)pos.y), ImVec2((i32)(pos.x+size.x), (i32)(pos.y+size.y)));
+	ImGui::ItemSize(bb, style.FramePadding.y);
+	if (!ImGui::ItemAdd(bb, id))
+		return false;
+
+	if (window->DC.ItemFlags & ImGuiItemFlags_ButtonRepeat)
+		flags |= ImGuiButtonFlags_Repeat;
+	bool hovered, held;
+	bool pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, flags);
+	if (pressed)
+		ImGui::MarkItemValueChanged(id);
+
+	// Render
+	const ImU32 col = (held && hovered) ? Darken(color, 2) : hovered ? Darken(color, 1) : color;
+	ImGui::RenderNavHighlight(bb, id);
+	ImGui::PushStyleColor(ImGuiCol_Text, col);
+	UI::RenderTextClipped(bb.Min + style.FramePadding, bb.Max - style.FramePadding, label, NULL, &label_size, style.ButtonTextAlign, &bb);
+	ImGui::PopStyleColor();
+
+	return pressed;
+}
+
 bool UI::Button2(const char* label, const ImVec2& size_arg)
 {
 	ImGuiButtonFlags flags = 0;

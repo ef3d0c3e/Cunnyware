@@ -116,8 +116,13 @@ static void SwapWindow(SDL_Window* window)
 		config.OversampleV = 4;
 		config.PixelSnapH = true;
 		config.SizePixels = 20.f;
-		UI::plex_regular = io.Fonts->AddFontFromMemoryTTF(const_cast<u8*>(resPlexRegularData), resPlexRegularSize, 20.f, &config);
-		UI::plex_bold = io.Fonts->AddFontFromMemoryTTF(const_cast<u8*>(resPlexBoldData), resPlexBoldSize, 20.f, &config);
+		constexpr static std::array<ImWchar, 5> plexRange = {
+			0x0020, 0x0787,
+			0xe000, 0xf8ff,
+			0
+		};
+		UI::plex_regular = io.Fonts->AddFontFromMemoryTTF(const_cast<u8*>(resPlexRegularData), resPlexRegularSize, 20.f, &config, plexRange.data());
+		UI::plex_bold = io.Fonts->AddFontFromMemoryTTF(const_cast<u8*>(resPlexBoldData), resPlexBoldSize, 20.f, &config, plexRange.data());
 		UI::iosevka_mono = io.Fonts->AddFontFromMemoryTTF(const_cast<u8*>(resIosevkaMonoData), resIosevkaMonoSize, 20.f, &config);
 
 		constexpr static std::array<ImWchar, 25> ESPRange = {
