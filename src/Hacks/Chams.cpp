@@ -19,8 +19,6 @@ EXPORT(bool, Settings::Chams::Allies::validMaterials) = false;
 
 typedef void (*DrawModelExecuteFn)(void*, IMatRenderContext*, const DrawModelState&, const ModelRenderInfo&, Mat3x4* customBoneToWorld);
 
-IMaterial* mat = nullptr;
-
 [[nodiscard]] inline ImVec4 ColorLerp(const std::vector<ImVec4>& colors, f32 p)
 {
 	if (colors.size() == 1)
@@ -55,7 +53,9 @@ bool DrawPlayer(void* thisptr, IMatRenderContext* renderContext, const DrawModel
 	if (!lp)
 		return true;
 
-	C_BasePlayer* p = (C_BasePlayer*)entityList->GetClientEntity(engine->GetLocalPlayer());
+	C_BasePlayer* p = (C_BasePlayer*)entityList->GetClientEntity(info.entityIndex);
+	if (!p)
+		return true;
 	if (!PlayerAdditionalInfo::ShouldDraw(p))
 		return true;
 
@@ -65,11 +65,10 @@ bool DrawPlayer(void* thisptr, IMatRenderContext* renderContext, const DrawModel
 	}
 	else if (p->GetTeam() != lp->GetTeam()) // Enemy
 	{
+		if (!Settings::Chams::Enemies::validMaterials)
+			return Settings::Chams::Enemies::drawOriginalModel;
 		for (auto& m : Settings::Chams::Enemies::materials)
 		{
-			if (!m.mat)
-				return true;
-
 			if (m.playerModulation != ChamsMat::PlayerModulation::NONE)
 			{
 				ImVec4 color;
@@ -105,10 +104,9 @@ bool DrawPlayer(void* thisptr, IMatRenderContext* renderContext, const DrawModel
 				}
 				m.mat->ColorModulate(color.x, color.y, color.z);
 				m.mat->AlphaModulate(color.w);
-
-				modelRender->ForcedMaterialOverride(m.mat);
-				modelRenderVMT->GetOriginalMethod<DrawModelExecuteFn>(21)(thisptr, renderContext, state, info, customBoneToWorld);
 			}
+			modelRender->ForcedMaterialOverride(m.mat);
+			modelRenderVMT->GetOriginalMethod<DrawModelExecuteFn>(21)(thisptr, renderContext, state, info, customBoneToWorld);
 		}
 
 		return Settings::Chams::Enemies::drawOriginalModel;
@@ -128,23 +126,6 @@ bool Chams::DrawModelExecute(void* thisptr, IMatRenderContext* renderContext, co
 		return true;
 	if (!info.model)
 		return true;
-
-	static bool created = false;
-	if (!created)
-	{
-		mat = Util::CreateMaterial("ayololcustom", "VertexLitGeneric",
-			"\"VertexLitGeneric\"\n"
-			"{\n"
-			"	\"$basetexture\" \"VGUI/white_additive\"\n"
-			"	\"$ignorez\" \"1\"\n"
-			"	\"$nofog\" \"1\"\n"
-			"	\"$model\" \"1\"\n"
-			"	\"$nocull\" \"1\"\n"
-			"	\"$halflambert\" \"1\"\n"
-			"}\n");
-
-		created = true;
-	}
 
 	const char* name = modelInfo->GetModelName(info.model);
 

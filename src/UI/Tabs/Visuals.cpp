@@ -3,6 +3,7 @@
 #include "../Widgets.hpp"
 #include "../../Hacks/Visuals.hpp"
 #include "../../Hacks/Info.hpp"
+#include "../../Hacks/Util.hpp"
 
 static void VisualsSettings()
 {
@@ -239,6 +240,18 @@ void ChamsLeft()
 				return;
 
 			Child("##CHAMSMODULATION", 17.05f);
+			if (UI::Button2("Delete material", ImVec2(-1, 0)))
+			{
+				UI::AddNotification(fmt::format("Material '{}' deleted!", Settings::Chams::Enemies::materials[selected].name), UI::NotificationType::MESSAGE, 1500);
+				if (Settings::Chams::Enemies::materials[selected].mat)
+					Settings::Chams::Enemies::materials[selected].mat->DecrementReferenceCount();
+				Settings::Chams::Enemies::validMaterials = false;
+					
+				Settings::Chams::Enemies::materials.erase(Settings::Chams::Enemies::materials.begin()+selected);
+				selected = -1;
+				EndChild();
+				return;
+			}
 			UI::Section(fmt::format("{}'s configuration", Settings::Chams::Enemies::materials[selected].name).c_str());
 			if (UI::ListCombo("Color modulation", PlayerModulationNames, Settings::Chams::Enemies::materials[selected].playerModulation))
 				Settings::Chams::Enemies::materials[selected].value = 0.f;
@@ -318,7 +331,6 @@ void ChamsRight()
 			.code = "\"VertexLitGeneric\"\n"
 			"{\n"
 			"	\"$basetexture\" \"vgui/white_additive\"\n"
-			"	\"$envmap\" \"\"\n"
 			"	\"$model\" \"1\"\n"
 			"	\"$flat\" \"1\"\n"
 			"	\"$nocull\" \"0\"\n"
@@ -344,6 +356,10 @@ void ChamsRight()
 	{
 		case ESPEntity::ENEMY:
 		{
+			if (Settings::Chams::Enemies::validMaterials)
+				UI::Text("State: valid");
+			else
+				UI::Text("State: invalid");
 			UI::Checkbox("Draw original model", &Settings::Chams::Enemies::drawOriginalModel);
 			ImGui::Columns(2, NULL, false);
 			{
@@ -352,12 +368,44 @@ void ChamsRight()
 			ImGui::NextColumn();
 			{
 				if (UI::Button("Add material", ImVec2(-1, 0)))
+				{
 					addMaterial(Settings::Chams::Enemies::materials, buf.data());
+					Settings::Chams::Enemies::validMaterials = false;
+				}
 			}
 			ImGui::EndColumns();
 			if (UI::Button2("Compile materials", ImVec2(-1, 0)))
 			{
+				if (selected >= 0)
+					Settings::Chams::Enemies::materials[selected].code = editor.GetText();
+				//material->UncacheUnusedMaterials();
+				Settings::Chams::Enemies::validMaterials = true;
+				for (auto& material : Settings::Chams::Enemies::materials)
+				{
+					if (material.mat)
+						material.mat->DecrementReferenceCount();
 
+					const auto beg = material.code.find('"');
+					const auto end = material.code.find('"', beg+1);
+					if (end == std::string::npos || beg >= end)
+					{
+						UI::AddNotification(fmt::format("Cannot determine material type for '{}'", material.name), UI::NotificationType::ERROR, 5000);
+						Settings::Chams::Enemies::validMaterials = false;
+					}
+					else
+					{
+						static u64 created = 0;
+						std::string type = material.code.substr(beg+1, end-end-1);
+						material.mat = Util::CreateMaterial(fmt::format("createdmatcunyware_{}", created++), type, material.code);
+						if (material.mat == nullptr)
+						{
+							UI::AddNotification(fmt::format("Material '{}' failed to compile", material.name), UI::NotificationType::ERROR, 5000);
+							Settings::Chams::Enemies::validMaterials = false;
+						}
+					}
+				}
+				if (Settings::Chams::Enemies::validMaterials)
+					UI::AddNotification("Compilation successfull", UI::NotificationType::MESSAGE, 1500);
 			}
 			UI::Section("Materials order");
 			i64 prevSelected = selected;
